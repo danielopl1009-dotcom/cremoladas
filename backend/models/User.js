@@ -7,7 +7,7 @@ class User {
     const result = await query(
       `INSERT INTO users (name,email,password,role,active)
        VALUES ($1,$2,$3,$4,$5) RETURNING id,name,email,role,active,created_at`,
-      [data.name, data.email, hash, data.role, data.active !== undefined ? data.active : 1]
+      [data.name, data.email, hash, data.role, data.active !== undefined ? data.active : true]
     );
     return result[0];
   }
@@ -22,7 +22,7 @@ class User {
       sql += ` AND role=$${paramCount++}`; 
     }    
     if (filters.activeOnly) { 
-      sql += ' AND active=1'; 
+      sql += ' AND active=true'; 
     }
     sql += ' ORDER BY name ASC';
     
@@ -70,12 +70,12 @@ class User {
   static verifyPassword(plain, hash) { return bcrypt.compare(plain, hash); }
 
   static async deactivate(id) {
-    const result = await query('UPDATE users SET active=0 WHERE id=$1 RETURNING id,name,email,role,active', [id]);
+    const result = await query('UPDATE users SET active=false WHERE id=$1 RETURNING id,name,email,role,active', [id]);
     return result[0] || null;
   }
 
   static async activate(id) {
-    const result = await query('UPDATE users SET active=1 WHERE id=$1 RETURNING id,name,email,role,active', [id]);
+    const result = await query('UPDATE users SET active=true WHERE id=$1 RETURNING id,name,email,role,active', [id]);
     return result[0] || null;
   }
 }
