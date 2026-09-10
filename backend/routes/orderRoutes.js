@@ -27,7 +27,15 @@ router.post(
 // Obtener pedidos - Todos los roles
 router.get('/', getOrders);
 
-// Obtener pedido por ID - Todos los roles
+// IMPORTANTE: Rutas de stats ANTES de /:id para evitar conflictos
+// Estadísticas del día - Administradores y caja
+router.get('/stats/daily', authorizeRoles('administrador', 'caja', 'servidor'), getDailyStats);
+// Productos más vendidos
+router.get('/stats/top-products', authorizeRoles('administrador', 'caja'), getTopProducts);
+// Rendimiento de jaladores
+router.get('/stats/jalador-performance', authorizeRoles('administrador', 'caja'), getJaladorPerformance);
+
+// Obtener pedido por ID - Todos los roles (debe ir DESPUÉS de /stats/*)
 router.get('/:id', getOrderById);
 
 // Actualizar estado — servidores, caja y administradores
@@ -37,12 +45,5 @@ router.patch(
   validateUpdateOrderStatus,
   updateOrderStatus
 );
-
-// Estadísticas del día - Administradores y caja
-router.get('/stats/daily', authorizeRoles('administrador', 'caja', 'servidor'), getDailyStats);
-// Productos más vendidos
-router.get('/stats/top-products', authorizeRoles('administrador', 'caja'), getTopProducts);
-// Rendimiento de jaladores
-router.get('/stats/jalador-performance', authorizeRoles('administrador', 'caja'), getJaladorPerformance);
 
 export default router;
