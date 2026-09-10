@@ -13,15 +13,31 @@ let _pool = null;
 export const initDB = async () => {
   if (_pool) return _pool;
 
-  const dbConfig = {
-    user:     process.env.DB_USER     || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
-    host:     process.env.DB_HOST     || 'localhost',
-    port:     process.env.DB_PORT     || 5432,
-    database: process.env.DB_NAME     || 'cremoladas',
-  };
+  // Debug: Ver qué variables están disponibles
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+  console.log('DATABASE_URL length:', process.env.DATABASE_URL?.length || 0);
 
-  _pool = new Pool(dbConfig);
+  // Usar DATABASE_URL si está disponible (Render, Railway, etc.)
+  if (process.env.DATABASE_URL) {
+    _pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    });
+    console.log('✓ PostgreSQL conectado usando DATABASE_URL');
+  } else {
+    // Fallback a variables individuales (desarrollo local)
+    console.log('⚠️ DATABASE_URL no encontrada, usando variables individuales');
+    const dbConfig = {
+      user:     process.env.DB_USER     || 'postgres',
+      password: process.env.DB_PASSWORD || 'postgres',
+      host:     process.env.DB_HOST     || 'localhost',
+      port:     process.env.DB_PORT     || 5432,
+      database: process.env.DB_NAME     || 'cremoladas',
+    };
+    _pool = new Pool(dbConfig);
+    console.log('✓ PostgreSQL conectado:', `${dbConfig.user}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`);
+  }
 
   _pool.on('error', (err) => {
     console.error('Pool error:', err);
@@ -31,7 +47,6 @@ export const initDB = async () => {
     const client = await _pool.connect();
     await client.query('SELECT NOW()');
     client.release();
-    console.log('✓ PostgreSQL conectado:', `${dbConfig.user}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`);
   } catch (err) {
     console.error('Error conectando a PostgreSQL:', err);
     throw err;

@@ -1,32 +1,31 @@
-import { initDB, query, exec, closeDB } from '../config/database.js';
+import { initDB } from '../config/database.js';
 
 const run = async () => {
   try {
-    await initDB();
+    const pool = await initDB();
     console.log('Creando tablas...');
 
-    // Crear tablas
-    await exec(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id         SERIAL PRIMARY KEY,
         name       VARCHAR(100) NOT NULL,
         email      VARCHAR(100) UNIQUE NOT NULL,
         password   VARCHAR(255) NOT NULL,
         role       VARCHAR(20) NOT NULL CHECK(role IN ('administrador','jalador','servidor','caja')),
-        active     INTEGER DEFAULT 1,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        active     BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
       );
 
       CREATE TABLE IF NOT EXISTS products (
         id          SERIAL PRIMARY KEY,
         name        VARCHAR(100) NOT NULL,
         description TEXT,
-        sizes       TEXT NOT NULL,
-        active      INTEGER DEFAULT 1,
+        sizes       JSONB NOT NULL,
+        active      BOOLEAN DEFAULT true,
         image_url   VARCHAR(255),
-        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at  TIMESTAMP DEFAULT NOW(),
+        updated_at  TIMESTAMP DEFAULT NOW()
       );
 
       CREATE TABLE IF NOT EXISTS orders (
@@ -34,18 +33,18 @@ const run = async () => {
         order_number     VARCHAR(20) UNIQUE NOT NULL,
         uuid             VARCHAR(36) UNIQUE NOT NULL,
         status           VARCHAR(20) NOT NULL DEFAULT 'pendiente'
-                         CHECK(status IN ('pendiente','preparando','listo','entregado','cancelado')),
+                           CHECK(status IN ('pendiente','preparando','listo','entregado','cancelado')),
         location_type    VARCHAR(20) NOT NULL
-                         CHECK(location_type IN ('vehiculo','frente_local','restaurante','botica','otro')),
-        location_details TEXT NOT NULL,
+                           CHECK(location_type IN ('vehiculo','frente_local','restaurante','botica','otro')),
+        location_details JSONB NOT NULL,
         observations     TEXT,
         total            DECIMAL(10,2) NOT NULL,
         created_by       INTEGER NOT NULL,
         updated_by       INTEGER,
         prepared_by      INTEGER,
         delivered_by     INTEGER,
-        created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at       TIMESTAMP DEFAULT NOW(),
+        updated_at       TIMESTAMP DEFAULT NOW(),
         prepared_at      TIMESTAMP,
         ready_at         TIMESTAMP,
         delivered_at     TIMESTAMP,
@@ -58,11 +57,11 @@ const run = async () => {
         product_id   INTEGER NOT NULL,
         product_name VARCHAR(100) NOT NULL,
         size         VARCHAR(50) NOT NULL,
-        flavors      TEXT DEFAULT '[]',
+        flavors      JSONB DEFAULT '[]',
         quantity     INTEGER NOT NULL CHECK(quantity > 0),
         unit_price   DECIMAL(10,2) NOT NULL,
         subtotal     DECIMAL(10,2) NOT NULL,
-        created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at   TIMESTAMP DEFAULT NOW()
       );
 
       CREATE TABLE IF NOT EXISTS order_status_history (
@@ -70,13 +69,11 @@ const run = async () => {
         order_id   INTEGER NOT NULL,
         status     VARCHAR(20) NOT NULL,
         changed_by INTEGER,
-        changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        changed_at TIMESTAMP DEFAULT NOW(),
         notes      TEXT
       );
 
-      CREATE TABLE IF NOT EXISTS order_number_seq (
-        current_value INTEGER DEFAULT 0
-      );
+      CREATE SEQUENCE IF NOT EXISTS order_number_seq START 1;
 
       CREATE TABLE IF NOT EXISTS payments (
         id             SERIAL PRIMARY KEY,
@@ -84,7 +81,7 @@ const run = async () => {
         method         VARCHAR(20) NOT NULL CHECK(method IN ('efectivo','yape','plin','tarjeta')),
         amount         DECIMAL(10,2) NOT NULL,
         confirmed_by   INTEGER,
-        confirmed_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        confirmed_at   TIMESTAMP DEFAULT NOW(),
         yape_photo_url TEXT,
         notes          TEXT
       );
@@ -94,21 +91,13 @@ const run = async () => {
       CREATE TABLE IF NOT EXISTS flavors (
         id         SERIAL PRIMARY KEY,
         name       TEXT UNIQUE NOT NULL,
-        active     INTEGER DEFAULT 1,
+        active     BOOLEAN DEFAULT true,
         sort_order INTEGER DEFAULT 0
       );
     `);
 
-    // Insertar secuencia inicial si no existe
-    const seqCheck = await query('SELECT * FROM order_number_seq LIMIT 1');
-    if (seqCheck.length === 0) {
-      await exec('INSERT INTO order_number_seq (current_value) VALUES (0)');
-    }
-
     console.log('✓ Tablas creadas');
     console.log('✓ Base de datos inicializada');
-    
-    await closeDB();
     process.exit(0);
   } catch (err) {
     console.error('Error inicializando base de datos:', err);
