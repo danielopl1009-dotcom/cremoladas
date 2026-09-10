@@ -1,6 +1,6 @@
 import { initDB } from '../config/database.js';
 
-const run = async () => {
+const run = () => {
   const db = initDB();
   console.log('Creando tablas...');
 
