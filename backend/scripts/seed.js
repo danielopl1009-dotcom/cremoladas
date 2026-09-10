@@ -61,7 +61,7 @@ const run = async () => {
     for (const p of PRODUCTOS) {
       try {
         await exec(
-          `INSERT INTO products (name, description, sizes, active) VALUES ($1, $2, $3, 1)`,
+          `INSERT INTO products (name, description, sizes, active) VALUES ($1, $2, $3, true)`,
           [p.name, p.description, JSON.stringify(p.sizes)]
         );
       } catch (e) {

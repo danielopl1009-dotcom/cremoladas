@@ -1,0 +1,17 @@
+{
+  "name": "Cremoladas Manager",
+  "short_name": "Cremoladas",
+  "description": "Sistema de gestión de pedidos para cremoladas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
