@@ -7,14 +7,16 @@ import { authenticateToken, authorizeRoles } from '../middleware/auth.js';
 import { validateCreateProduct } from '../middleware/validation.js';
 
 const router = express.Router();
-router.use(authenticateToken);
 
-router.get('/',            getProducts);
-router.get('/flavors',     getFlavors);
-router.get('/:id',         getProductById);
-router.post('/',           authorizeRoles('administrador'), validateCreateProduct, createProduct);
-router.put('/:id',         authorizeRoles('administrador'), updateProduct);
-router.delete('/:id',      authorizeRoles('administrador'), deleteProduct);
-router.patch('/:id/activate', authorizeRoles('administrador'), activateProduct);
+// Rutas públicas (no requieren autenticación) - jaladores necesitan ver productos
+router.get('/',        getProducts);
+router.get('/flavors', getFlavors);
+router.get('/:id',     getProductById);
+
+// Rutas protegidas (solo administrador)
+router.post('/',              authenticateToken, authorizeRoles('administrador'), validateCreateProduct, createProduct);
+router.put('/:id',            authenticateToken, authorizeRoles('administrador'), updateProduct);
+router.delete('/:id',         authenticateToken, authorizeRoles('administrador'), deleteProduct);
+router.patch('/:id/activate', authenticateToken, authorizeRoles('administrador'), activateProduct);
 
 export default router;
