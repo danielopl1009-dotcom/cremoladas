@@ -29,7 +29,7 @@ export const confirmPayment = async (req, res) => {
 
     // Verificar que no esté ya pagado
     const existing = await query('SELECT id FROM payments WHERE order_id = $1', [orderId]);
-    if (existing.rows.length > 0) {
+    if (existing.length > 0) {
       return res.status(409).json({ success: false, message: 'Este pedido ya fue pagado' });
     }
 
@@ -45,7 +45,7 @@ export const confirmPayment = async (req, res) => {
       [orderId, method, order.total, req.user.userId, yapePhotoUrl, notes || null]
     );
 
-    const payment = result.rows[0];
+    const payment = result[0];
 
     // Emitir evento en tiempo real para que todos vean el cambio
     const io = (await import('../config/socket.js')).getIO();
@@ -79,7 +79,7 @@ export const getPaymentByOrder = async (req, res) => {
        WHERE p.order_id = $1`,
       [orderId]
     );
-    res.json({ success: true, data: result.rows[0] || null });
+    res.json({ success: true, data: result[0] || null });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error al obtener pago' });
   }
@@ -113,8 +113,8 @@ export const getDailyPayments = async (req, res) => {
 
     res.json({
       success: true,
-      data: result.rows,
-      totals: totals.rows,
+      data: result,
+      totals: totals,
     });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error al obtener pagos' });

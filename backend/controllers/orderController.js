@@ -10,7 +10,7 @@ export const createOrder = async (req, res) => {
     const enrichedItems = [];
 
     for (const item of items) {
-      const product = Product.getById(item.productId);
+      const product = await Product.getById(item.productId);
       if (!product) return res.status(400).json({ success: false, message: `Producto ${item.productId} no encontrado` });
       if (!product.active) return res.status(400).json({ success: false, message: `${product.name} no disponible` });
 
@@ -34,12 +34,12 @@ export const createOrder = async (req, res) => {
     if (Math.abs(calculatedTotal - total) > 0.05)
       return res.status(400).json({ success: false, message: 'Total no coincide' });
 
-    const order = Order.create(
+    const order = await Order.create(
       { locationType, locationDetails, items: enrichedItems, observations, total: calculatedTotal, uuid },
       req.user.userId
     );
 
-    const fullOrder = Order.getById(order.id);
+    const fullOrder = await Order.getById(order.id);
     emitNewOrder(fullOrder);
     res.status(201).json({ success: true, data: fullOrder });
   } catch (err) {
@@ -51,7 +51,7 @@ export const createOrder = async (req, res) => {
 };
 
 export const getOrders = async (req, res) => {
-  const result = Order.getAll({
+  const result = await Order.getAll({
     status:    req.query.status,
     jaladorId: req.user.role === 'jalador' ? req.user.userId : req.query.jaladorId,
     search:    req.query.search,
@@ -64,7 +64,7 @@ export const getOrders = async (req, res) => {
 };
 
 export const getOrderById = async (req, res) => {
-  const order = Order.getById(req.params.id);
+  const order = await Order.getById(req.params.id);
   if (!order) return res.status(404).json({ success: false, message: 'No encontrado' });
   if (req.user.role === 'jalador' && order.created_by !== req.user.userId)
     return res.status(403).json({ success: false, message: 'Sin permiso' });
@@ -74,15 +74,15 @@ export const getOrderById = async (req, res) => {
 export const updateOrderStatus = async (req, res) => {
   try {
     const { status, notes } = req.body;
-    const order = Order.getById(req.params.id);
+    const order = await Order.getById(req.params.id);
     if (!order) return res.status(404).json({ success: false, message: 'No encontrado' });
 
     const valid = { pendiente:['preparando','cancelado'], preparando:['listo','cancelado'], listo:['entregado','cancelado'], entregado:[], cancelado:[] };
     if (!valid[order.status].includes(status))
       return res.status(400).json({ success: false, message: `No se puede pasar de ${order.status} a ${status}` });
 
-    Order.updateStatus(req.params.id, status, req.user.userId, notes);
-    const updated = Order.getById(req.params.id);
+    await Order.updateStatus(req.params.id, status, req.user.userId, notes);
+    const updated = await Order.getById(req.params.id);
     emitOrderStatusUpdate(updated);
     res.json({ success: true, data: updated });
   } catch (err) {
@@ -91,8 +91,8 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-export const getDailyStats       = async (req, res) => res.json({ success: true, data: Order.getDailyStats(req.query.date ? new Date(req.query.date) : new Date()) });
-export const getTopProducts       = async (req, res) => res.json({ success: true, data: Order.getTopProducts(parseInt(req.query.limit) || 10) });
-export const getJaladorPerformance = async (req, res) => res.json({ success: true, data: Order.getJaladorPerformance() });
+export const getDailyStats       = async (req, res) => res.json({ success: true, data: await Order.getDailyStats(req.query.date ? new Date(req.query.date) : new Date()) });
+export const getTopProducts       = async (req, res) => res.json({ success: true, data: await Order.getTopProducts(parseInt(req.query.limit) || 10) });
+export const getJaladorPerformance = async (req, res) => res.json({ success: true, data: await Order.getJaladorPerformance() });
 
 export default { createOrder, getOrders, getOrderById, updateOrderStatus, getDailyStats, getTopProducts, getJaladorPerformance };

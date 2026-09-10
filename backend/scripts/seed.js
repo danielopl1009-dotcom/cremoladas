@@ -1,4 +1,4 @@
-import { initDB } from '../config/database.js';
+import { initDB, query, exec, closeDB } from '../config/database.js';
 import bcrypt from 'bcryptjs';
 
 const SABORES = [
@@ -27,69 +27,81 @@ const PRODUCTOS = [
 ];
 
 const run = async () => {
-  const { query } = await import('../config/database.js');
-  console.log('Ejecutando seed...');
+  try {
+    await initDB();
+    console.log('Ejecutando seed...');
 
-  // Usuarios
-  const users = [
-    { name: 'Administrador', email: 'admin@cremoladas.com',  password: 'admin123', role: 'administrador' },
-    { name: 'Carlos López',  email: 'carlos@cremoladas.com', password: '123456',   role: 'jalador' },
-    { name: 'Luis Martínez', email: 'luis@cremoladas.com',   password: '123456',   role: 'jalador' },
-    { name: 'Pedro García',  email: 'pedro@cremoladas.com',  password: '123456',   role: 'jalador' },
-    { name: 'Ana Torres',    email: 'ana@cremoladas.com',    password: '123456',   role: 'servidor' },
-    { name: 'María Flores',  email: 'maria@cremoladas.com',  password: '123456',   role: 'servidor' },
-    { name: 'Rosa Quispe',   email: 'rosa@cremoladas.com',   password: '123456',   role: 'caja' },
-  ];
+    // Usuarios
+    const users = [
+      { name: 'Administrador', email: 'admin@cremoladas.com',  password: 'admin123', role: 'administrador' },
+      { name: 'Carlos López',  email: 'carlos@cremoladas.com', password: '123456',   role: 'jalador' },
+      { name: 'Luis Martínez', email: 'luis@cremoladas.com',   password: '123456',   role: 'jalador' },
+      { name: 'Pedro García',  email: 'pedro@cremoladas.com',  password: '123456',   role: 'jalador' },
+      { name: 'Ana Torres',    email: 'ana@cremoladas.com',    password: '123456',   role: 'servidor' },
+      { name: 'María Flores',  email: 'maria@cremoladas.com',  password: '123456',   role: 'servidor' },
+      { name: 'Rosa Quispe',   email: 'rosa@cremoladas.com',   password: '123456',   role: 'caja' },
+    ];
 
-  for (const u of users) {
-    const hash = await bcrypt.hash(u.password, 10);
-    try {
-      query(
-        `INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)`,
-        [u.name, u.email, hash, u.role]
-      );
-    } catch (e) {
-      if (!e.message.includes('UNIQUE')) throw e;
+    for (const u of users) {
+      const hash = await bcrypt.hash(u.password, 10);
+      try {
+        await exec(
+          `INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)`,
+          [u.name, u.email, hash, u.role]
+        );
+      } catch (e) {
+        if (!e.message.includes('unique')) {
+          throw e;
+        }
+      }
     }
-  }
-  console.log(`✓ ${users.length} usuarios creados`);
+    console.log(`✓ ${users.length} usuarios creados`);
 
-  // Productos
-  for (const p of PRODUCTOS) {
-    try {
-      query(
-        `INSERT INTO products (name, description, sizes, active) VALUES (?, ?, ?, 1)`,
-        [p.name, p.description, JSON.stringify(p.sizes)]
-      );
-    } catch (e) {
-      if (!e.message.includes('UNIQUE')) throw e;
+    // Productos
+    for (const p of PRODUCTOS) {
+      try {
+        await exec(
+          `INSERT INTO products (name, description, sizes, active) VALUES ($1, $2, $3, 1)`,
+          [p.name, p.description, JSON.stringify(p.sizes)]
+        );
+      } catch (e) {
+        if (!e.message.includes('unique')) {
+          throw e;
+        }
+      }
     }
-  }
-  console.log(`✓ ${PRODUCTOS.length} productos creados (Vaso, Taper, Litro)`);
+    console.log(`✓ ${PRODUCTOS.length} productos creados (Vaso, Taper, Litro)`);
 
-  // Sabores
-  for (let i = 0; i < SABORES.length; i++) {
-    try {
-      query(
-        `INSERT INTO flavors (name, sort_order) VALUES (?, ?)`,
-        [SABORES[i], i]
-      );
-    } catch (e) {
-      if (!e.message.includes('UNIQUE')) throw e;
+    // Sabores
+    for (let i = 0; i < SABORES.length; i++) {
+      try {
+        await exec(
+          `INSERT INTO flavors (name, sort_order) VALUES ($1, $2)`,
+          [SABORES[i], i]
+        );
+      } catch (e) {
+        if (!e.message.includes('unique')) {
+          throw e;
+        }
+      }
     }
+    console.log(`✓ ${SABORES.length} sabores creados`);
+
+    console.log('\n────────────────────────────────────────────');
+    console.log('  CREDENCIALES DE ACCESO');
+    console.log('────────────────────────────────────────────');
+    console.log('  admin@cremoladas.com     →  admin123  (Administrador)');
+    console.log('  carlos@cremoladas.com    →  123456    (Jalador)');
+    console.log('  ana@cremoladas.com       →  123456    (Servidor)');
+    console.log('  rosa@cremoladas.com      →  123456    (Caja)');
+    console.log('────────────────────────────────────────────\n');
+
+    await closeDB();
+    process.exit(0);
+  } catch (e) {
+    console.error('Error en seed:', e);
+    process.exit(1);
   }
-  console.log(`✓ ${SABORES.length} sabores creados`);
-
-  console.log('\n────────────────────────────────────────────');
-  console.log('  CREDENCIALES DE ACCESO');
-  console.log('────────────────────────────────────────────');
-  console.log('  admin@cremoladas.com     →  admin123  (Administrador)');
-  console.log('  carlos@cremoladas.com    →  123456    (Jalador)');
-  console.log('  ana@cremoladas.com       →  123456    (Servidor)');
-  console.log('  rosa@cremoladas.com      →  123456    (Caja)');
-  console.log('────────────────────────────────────────────\n');
-
-  process.exit(0);
 };
 
-run().catch(e => { console.error(e); process.exit(1); });
+run();

@@ -7,7 +7,7 @@ export const login = async (req, res) => {
     if (!email || !password)
       return res.status(400).json({ success: false, message: 'Email y contraseña requeridos' });
 
-    const user = User.getByEmail(email);
+    const user = await User.getByEmail(email);
     if (!user || !user.active)
       return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
 
@@ -28,13 +28,13 @@ export const login = async (req, res) => {
 };
 
 export const getProfile = async (req, res) => {
-  const user = User.getById(req.user.userId);
+  const user = await User.getById(req.user.userId);
   if (!user) return res.status(404).json({ success: false, message: 'No encontrado' });
   res.json({ success: true, data: user });
 };
 
 export const verifyToken = async (req, res) => {
-  const user = User.getById(req.user.userId);
+  const user = await User.getById(req.user.userId);
   if (!user || !user.active) return res.status(403).json({ success: false, message: 'Inactivo' });
   res.json({ success: true, data: { user: { id: user.id, name: user.name, email: user.email, role: user.role } } });
 };
