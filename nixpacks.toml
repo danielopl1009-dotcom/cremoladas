@@ -1,0 +1,5 @@
+[build]
+nixpkgs = ["nodejs@20"]
+
+[start]
+cmd = "cd backend && npm install && npm run init-db && npm run seed && npm start"

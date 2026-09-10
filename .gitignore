@@ -1,0 +1,30 @@
+# Dependencias
+node_modules/
+*/node_modules/
+
+# Build frontend
+frontend/dist/
+
+# Variables de entorno (Railway las inyecta)
+.env
+.env.local
+backend/.env
+
+# Base de datos local (Railway usa volumen persistente)
+backend/data/
+
+# Uploads locales
+backend/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

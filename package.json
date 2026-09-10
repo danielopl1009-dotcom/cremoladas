@@ -1,0 +1,15 @@
+{
+  "name": "sistema-cremoladas",
+  "version": "1.0.0",
+  "description": "Sistema de gestión para cremoladas",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "cd backend && npm install && npm run init-db && npm run seed && npm start",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
