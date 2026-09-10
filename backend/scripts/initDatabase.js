@@ -19,7 +19,7 @@ const run = async () => {
 
       CREATE TABLE IF NOT EXISTS products (
         id          SERIAL PRIMARY KEY,
-        name        VARCHAR(100) NOT NULL,
+        name        VARCHAR(100) UNIQUE NOT NULL,
         description TEXT,
         sizes       JSONB NOT NULL,
         active      BOOLEAN DEFAULT true,

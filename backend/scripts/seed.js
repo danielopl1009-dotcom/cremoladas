@@ -59,33 +59,25 @@ const run = async () => {
 
     // Productos
     for (const p of PRODUCTOS) {
-      try {
-        await exec(
-          `INSERT INTO products (name, description, sizes, active) VALUES ($1, $2, $3, true)`,
-          [p.name, p.description, JSON.stringify(p.sizes)]
-        );
-      } catch (e) {
-        if (!e.message.includes('unique')) {
-          throw e;
-        }
-      }
+      await exec(
+        `INSERT INTO products (name, description, sizes, active) 
+         VALUES ($1, $2, $3, true) 
+         ON CONFLICT (name) DO NOTHING`,
+        [p.name, p.description, JSON.stringify(p.sizes)]
+      );
     }
-    console.log(`✓ ${PRODUCTOS.length} productos creados (Vaso, Taper, Litro)`);
+    console.log(`✓ ${PRODUCTOS.length} productos verificados`);
 
     // Sabores
     for (let i = 0; i < SABORES.length; i++) {
-      try {
-        await exec(
-          `INSERT INTO flavors (name, sort_order) VALUES ($1, $2)`,
-          [SABORES[i], i]
-        );
-      } catch (e) {
-        if (!e.message.includes('unique')) {
-          throw e;
-        }
-      }
+      await exec(
+        `INSERT INTO flavors (name, sort_order) 
+         VALUES ($1, $2) 
+         ON CONFLICT (name) DO UPDATE SET sort_order = $2`,
+        [SABORES[i], i]
+      );
     }
-    console.log(`✓ ${SABORES.length} sabores creados`);
+    console.log(`✓ ${SABORES.length} sabores verificados`);
 
     console.log('\n────────────────────────────────────────────');
     console.log('  CREDENCIALES DE ACCESO');
