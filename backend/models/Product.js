@@ -6,7 +6,7 @@ class Product {
       `INSERT INTO products (name,description,sizes,active,image_url)
        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
       [data.name, data.description || null, JSON.stringify(data.sizes),
-       data.active !== undefined ? data.active : 1, data.imageUrl || null]
+       data.active !== undefined ? data.active : true, data.imageUrl || null]
     );
     return result[0];
   }
@@ -16,7 +16,7 @@ class Product {
     const params = [];
     let paramCount = 1;
     
-    if (filters.activeOnly) sql += ' AND active=1';
+    if (filters.activeOnly) sql += ' AND active=true';
     if (filters.search) { 
       params.push(`%${filters.search}%`); 
       sql += ` AND name LIKE $${paramCount++}`; 
@@ -56,12 +56,12 @@ class Product {
   }
 
   static async delete(id) {
-    const result = await query('UPDATE products SET active=0 WHERE id=$1 RETURNING *', [id]);
+    const result = await query('UPDATE products SET active=false WHERE id=$1 RETURNING *', [id]);
     return result[0] || null;
   }
 
   static async activate(id) {
-    const result = await query('UPDATE products SET active=1 WHERE id=$1 RETURNING *', [id]);
+    const result = await query('UPDATE products SET active=true WHERE id=$1 RETURNING *', [id]);
     return result[0] || null;
   }
 }

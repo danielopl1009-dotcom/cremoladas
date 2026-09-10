@@ -17,7 +17,7 @@ export const getProducts = async (req, res) => {
 
 export const getFlavors = async (req, res) => {
   try {
-    const result = await query('SELECT id, name, sort_order FROM flavors WHERE active = 1 ORDER BY sort_order ASC');
+    const result = await query('SELECT id, name, sort_order FROM flavors WHERE active = true ORDER BY sort_order ASC');
     res.json({ success: true, data: result });
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
