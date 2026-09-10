@@ -63,6 +63,7 @@ function AdminOrderRow({ order, onView, onPay }) {
   );
 }
 
+function OrderDetail({ orderId, onClose }) {
   const { data: order, isLoading } = useOrder(orderId);
   const updateStatus = useUpdateOrderStatus();
 
