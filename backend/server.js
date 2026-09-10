@@ -72,7 +72,29 @@ app.use(errorHandler);
 // ── Arranque ─────────────────────────────────────────────────────────────────
 const start = async () => {
   try {
-    await initDB();
+    const pool = await initDB();
+    
+    // Auto-seed si no hay productos
+    const { rows } = await pool.query('SELECT COUNT(*) as count FROM products');
+    if (parseInt(rows[0].count) === 0) {
+      console.log('⚠️  No hay productos, ejecutando seed automático...');
+      const { exec } = await import('./config/database.js');
+      
+      const PRODUCTOS = [
+        { name: 'Vaso', description: 'Cremolada en vaso', sizes: { 'Vaso S/4': 4, 'Vaso S/5': 5, 'Vaso S/6': 6, 'Vaso S/7': 7, 'Vaso S/9': 9 } },
+        { name: 'Taper', description: 'Cremolada en taper', sizes: { 'Taper S/4': 4, 'Taper S/5': 5, 'Taper S/8 (medio litro)': 8 } },
+        { name: 'Litro', description: 'Cremolada por litro', sizes: { 'Litro S/16': 16 } },
+      ];
+      
+      for (const p of PRODUCTOS) {
+        await exec(
+          `INSERT INTO products (name, description, sizes, active) VALUES ($1, $2, $3, true)`,
+          [p.name, p.description, JSON.stringify(p.sizes)]
+        );
+      }
+      console.log('✓ Productos insertados automáticamente');
+    }
+    
     initializeSocket(server);
 
     server.listen(PORT, '0.0.0.0', () => {
