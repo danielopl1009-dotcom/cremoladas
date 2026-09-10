@@ -59,23 +59,31 @@ const run = async () => {
 
     // Productos
     for (const p of PRODUCTOS) {
-      await exec(
-        `INSERT INTO products (name, description, sizes, active) 
-         VALUES ($1, $2, $3, true) 
-         ON CONFLICT (name) DO NOTHING`,
-        [p.name, p.description, JSON.stringify(p.sizes)]
-      );
+      try {
+        await exec(
+          `INSERT INTO products (name, description, sizes, active) VALUES ($1, $2, $3, true)`,
+          [p.name, p.description, JSON.stringify(p.sizes)]
+        );
+      } catch (e) {
+        if (!e.message.includes('duplicate') && !e.message.includes('unique')) {
+          throw e;
+        }
+      }
     }
     console.log(`✓ ${PRODUCTOS.length} productos verificados`);
 
     // Sabores
     for (let i = 0; i < SABORES.length; i++) {
-      await exec(
-        `INSERT INTO flavors (name, sort_order) 
-         VALUES ($1, $2) 
-         ON CONFLICT (name) DO UPDATE SET sort_order = $2`,
-        [SABORES[i], i]
-      );
+      try {
+        await exec(
+          `INSERT INTO flavors (name, sort_order) VALUES ($1, $2)`,
+          [SABORES[i], i]
+        );
+      } catch (e) {
+        if (!e.message.includes('duplicate') && !e.message.includes('unique')) {
+          throw e;
+        }
+      }
     }
     console.log(`✓ ${SABORES.length} sabores verificados`);
 
