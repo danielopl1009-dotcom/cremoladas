@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import initSqlJs from 'sql.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -6,14 +6,22 @@ import fs from 'fs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH   = path.join(__dirname, '..', 'cremoladas.db');
 
-// Singleton — se inicializa una vez al arrancar el servidor
 let _db = null;
+let SQL = null;
 
-export const initDB = () => {
+export const initDB = async () => {
   if (_db) return _db;
-  _db = new Database(DB_PATH);
-  _db.pragma('journal_mode = WAL');
-  console.log('✓ SQLite listo:', DB_PATH);
+  
+  SQL = await initSqlJs();
+  
+  if (fs.existsSync(DB_PATH)) {
+    const buffer = fs.readFileSync(DB_PATH);
+    _db = new SQL.Database(buffer);
+  } else {
+    _db = new SQL.Database();
+  }
+  
+  console.log('✓ SQLite (sql.js) listo:', DB_PATH);
   return _db;
 };
 
@@ -22,18 +30,30 @@ export const getDB = () => {
   return _db;
 };
 
+export const saveDB = () => {
+  if (!_db) return;
+  const data = _db.export();
+  const buffer = Buffer.from(data);
+  fs.writeFileSync(DB_PATH, buffer);
+};
+
 /**
- * Helper query — retorna un array de filas (mejor-sqlite3 es síncrono)
+ * Helper query — retorna un array de filas
  */
 export const query = (text, params = []) => {
   const db = getDB();
   try {
     const stmt = db.prepare(text);
-    if (text.trim().toUpperCase().startsWith('SELECT')) {
-      return stmt.all(...params);
-    } else {
-      return stmt.run(...params);
+    stmt.bind(params);
+    
+    const results = [];
+    while (stmt.step()) {
+      results.push(stmt.getAsObject());
     }
+    stmt.free();
+    
+    saveDB();
+    return results;
   } catch (err) {
     console.error('Query error:', text, params, err);
     throw err;
@@ -41,12 +61,34 @@ export const query = (text, params = []) => {
 };
 
 /**
- * Transacción — síncrona
+ * Ejecutar statements sin retornar datos
+ */
+export const exec = (sql) => {
+  const db = getDB();
+  try {
+    db.run(sql);
+    saveDB();
+  } catch (err) {
+    console.error('Exec error:', sql, err);
+    throw err;
+  }
+};
+
+/**
+ * Transacción
  */
 export const transaction = (callback) => {
   const db = getDB();
-  const tx = db.transaction(() => callback(db));
-  return tx();
+  try {
+    exec('BEGIN TRANSACTION');
+    const result = callback(db);
+    exec('COMMIT');
+    saveDB();
+    return result;
+  } catch (err) {
+    exec('ROLLBACK');
+    throw err;
+  }
 };
 
-export default { initDB, getDB, query, transaction };
+export default { initDB, getDB, query, exec, transaction, saveDB };

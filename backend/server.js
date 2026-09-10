@@ -70,9 +70,9 @@ app.use(notFound);
 app.use(errorHandler);
 
 // ── Arranque ─────────────────────────────────────────────────────────────────
-const start = () => {
+const start = async () => {
   try {
-    initDB();
+    await initDB();
     initializeSocket(server);
 
     server.listen(PORT, '0.0.0.0', () => {
