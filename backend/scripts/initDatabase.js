@@ -19,7 +19,11 @@ const run = async () => {
 
       CREATE TABLE IF NOT EXISTS products (
         id          SERIAL PRIMARY KEY,
+<<<<<<< HEAD
         name        VARCHAR(100) UNIQUE NOT NULL,
+=======
+        name        VARCHAR(100) NOT NULL,
+>>>>>>> dcb9654 (Fix: Use pg driver and DATABASE_URL for Render)
         description TEXT,
         sizes       JSONB NOT NULL,
         active      BOOLEAN DEFAULT true,
