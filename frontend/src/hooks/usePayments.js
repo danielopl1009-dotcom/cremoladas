@@ -42,6 +42,33 @@ export const useConfirmPayment = () => {
   });
 };
 
+// Subir comprobante de pago (desde "Mis pedidos")
+export const useUploadPayment = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ orderId, method, notes, yapePhoto }) => {
+      const formData = new FormData();
+      formData.append('method', method);
+      if (notes) formData.append('notes', notes);
+      if (yapePhoto) formData.append('yapePhoto', yapePhoto);
+
+      const { data } = await api.post(`/orders/${orderId}/pay`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return data.data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['payment', String(vars.orderId)] });
+      qc.invalidateQueries({ queryKey: ['orders'] });
+      qc.invalidateQueries({ queryKey: ['payments', 'daily'] });
+      toast.success('Comprobante subido correctamente');
+    },
+    onError: (e) => {
+      toast.error(e.response?.data?.message || 'Error al subir comprobante');
+    },
+  });
+};
+
 // Pagos del día (para caja y admin)
 export const useDailyPayments = (date) => {
   return useQuery({

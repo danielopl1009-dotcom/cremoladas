@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { formatDistanceToNow, format, differenceInMinutes } from 'date-fns';
 import { es } from 'date-fns/locale';
 import clsx from 'clsx';
-import { IcoCar, IcoHome, IcoStore, IcoMapPin } from '../ui/Icons.jsx';
+import { IcoCar, IcoHome, IcoStore, IcoMapPin, IcoUpload } from '../ui/Icons.jsx';
 import StatusBadge from '../ui/StatusBadge.jsx';
 import { PaymentBadge } from '../ui/PaymentBadge.jsx';
+import PaymentUploadModal from './PaymentUploadModal.jsx';
 import { useOrders } from '../../hooks/useOrders.js';
-import { usePayment } from '../../hooks/usePayments.js';
+import { usePayment, useUploadPayment } from '../../hooks/usePayments.js';
 import useAuthStore from '../../stores/authStore.js';
 import { formatHoraPE, minutosBetween, tiempoRelativo, colorEspera } from '../../lib/time.js';
 
@@ -17,7 +19,7 @@ const LOC_ICON = {
 const fh = formatHoraPE;
 const mins = minutosBetween;
 
-function OrderRow({ order }) {
+function OrderRow({ order, onUploadPayment }) {
   const details = typeof order.location_details === 'string'
     ? JSON.parse(order.location_details) : order.location_details;
   const Icon     = LOC_ICON[order.location_type] || IcoMapPin;
@@ -30,6 +32,11 @@ function OrderRow({ order }) {
   const waitToPrep = minutosBetween(order.created_at, order.prepared_at);
   const prepTime   = minutosBetween(order.prepared_at, order.ready_at);
   const totalTime  = minutosBetween(order.created_at, order.delivered_at || order.cancelled_at);
+
+  // Mostrar botón de adjuntar pago si:
+  // - No hay pago registrado, O
+  // - El pago fue rechazado
+  const showUploadButton = !payment || payment.status === 'rejected';
 
   return (
     <div className="card p-4 space-y-3 animate-fade-in">
@@ -116,9 +123,9 @@ function OrderRow({ order }) {
         )}
       </div>
 
-      {/* Footer */}
-      <div className="flex justify-between items-center text-xs text-surface-400">
-        <span>{tiempoRelativo(order.created_at)}</span>
+      {/* Footer con pago y botón de adjuntar */}
+      <div className="flex justify-between items-center gap-3 text-xs">
+        <span className="text-surface-400">{tiempoRelativo(order.created_at)}</span>
         <div className="flex items-center gap-2">
           <PaymentBadge payment={payment} size="sm" />
           <span className="font-bold text-surface-700 dark:text-surface-300">
@@ -126,6 +133,17 @@ function OrderRow({ order }) {
           </span>
         </div>
       </div>
+
+      {/* Botón para adjuntar pago */}
+      {showUploadButton && (
+        <button
+          onClick={() => onUploadPayment(order.id)}
+          className="w-full btn-secondary text-sm py-2"
+        >
+          <IcoUpload size={14} />
+          <span>Adjuntar comprobante</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -147,6 +165,21 @@ export default function MyOrdersList({ search }) {
     search: search || undefined,
   });
 
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const uploadPaymentMutation = useUploadPayment();
+
+  const handleOpenUploadModal = (orderId) => {
+    setSelectedOrderId(orderId);
+    setUploadModalOpen(true);
+  };
+
+  const handleUploadPayment = async (data) => {
+    await uploadPaymentMutation.mutateAsync(data);
+    setUploadModalOpen(false);
+    setSelectedOrderId(null);
+  };
+
   if (isLoading) return (
     <div className="flex justify-center py-12">
       <div className="spinner text-brand-500" />
@@ -161,8 +194,28 @@ export default function MyOrdersList({ search }) {
   );
 
   return (
-    <div className="space-y-3">
-      {orders.map(o => <OrderRow key={o.id} order={o} />)}
-    </div>
+    <>
+      <div className="space-y-3">
+        {orders.map(o => (
+          <OrderRow 
+            key={o.id} 
+            order={o} 
+            onUploadPayment={handleOpenUploadModal}
+          />
+        ))}
+      </div>
+
+      {uploadModalOpen && (
+        <PaymentUploadModal
+          isOpen={uploadModalOpen}
+          onClose={() => {
+            setUploadModalOpen(false);
+            setSelectedOrderId(null);
+          }}
+          onUpload={handleUploadPayment}
+          orderId={selectedOrderId}
+        />
+      )}
+    </>
   );
 }
