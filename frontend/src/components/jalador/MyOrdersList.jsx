@@ -189,7 +189,7 @@ export default function MyOrdersList({ search }) {
   if (orders.length === 0) return (
     <div className="flex flex-col items-center justify-center py-20 text-surface-300 dark:text-surface-600">
       <IcoClipboard size={40} className="mb-3 opacity-40" />
-      <p className="text-sm">Sin pedidos todavía</p>
+      <p className="text-sm">Aún no hay pedidos</p>
     </div>
   );
 

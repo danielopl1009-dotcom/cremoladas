@@ -34,10 +34,10 @@ export const useConfirmPayment = () => {
       qc.invalidateQueries({ queryKey: ['payment', String(vars.orderId)] });
       qc.invalidateQueries({ queryKey: ['orders'] });
       qc.invalidateQueries({ queryKey: ['payments', 'daily'] });
-      toast.success('Pago confirmado correctamente');
+      toast.success('Pago confirmado');
     },
     onError: (e) => {
-      toast.error(e.response?.data?.message || 'Error al confirmar pago');
+      toast.error(e.response?.data?.message || 'No se pudo confirmar el pago');
     },
   });
 };
@@ -61,10 +61,10 @@ export const useUploadPayment = () => {
       qc.invalidateQueries({ queryKey: ['payment', String(vars.orderId)] });
       qc.invalidateQueries({ queryKey: ['orders'] });
       qc.invalidateQueries({ queryKey: ['payments', 'daily'] });
-      toast.success('Comprobante subido correctamente');
+      toast.success('Comprobante subido');
     },
     onError: (e) => {
-      toast.error(e.response?.data?.message || 'Error al subir comprobante');
+      toast.error(e.response?.data?.message || 'No se pudo subir el comprobante');
     },
   });
 };

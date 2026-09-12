@@ -69,7 +69,7 @@ function FlavorSelector({ selected, onChange }) {
 
       {selected.length > 0 && (
         <p className="mt-1 text-xs text-surface-400">
-          {selected.length}/3 sabores — {selected.length < 3 ? 'puedes agregar más' : 'máximo alcanzado'}
+          {selected.length === 1 ? '1 sabor' : `${selected.length} sabores`}{selected.length < 3 ? ' — puedes agregar más' : ''}
         </p>
       )}
     </div>
@@ -190,9 +190,9 @@ export default function ProductPicker({ cart, onCartChange }) {
 
   return (
     <div className="space-y-4">
-      {/* Paso 1: Tipo de envase */}
+      {/* Paso 1: Envase */}
       <div>
-        <p className="section-title mb-2">Tipo de envase</p>
+        <p className="section-title mb-2">Envase</p>
         <div className="flex gap-2 flex-wrap">
           {products.map(p => (
             <button
@@ -242,7 +242,7 @@ export default function ProductPicker({ cart, onCartChange }) {
       {/* Paso 3: Sabores */}
       {selectedSize && (
         <div className="animate-fade-in">
-          <p className="section-title mb-2">Sabor(es) — máx. 3</p>
+          <p className="section-title mb-2">Sabor(es) — hasta 3</p>
           <FlavorSelector selected={selectedFlavors} onChange={setSelectedFlavors} />
         </div>
       )}

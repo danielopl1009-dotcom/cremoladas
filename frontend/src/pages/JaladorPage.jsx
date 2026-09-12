@@ -106,7 +106,7 @@ function NewOrderForm({ onSuccess }) {
       {step === 1 && (
         <div className="space-y-4 animate-fade-in">
           <p className="text-sm font-semibold text-surface-700 dark:text-surface-300">
-            Ubicación del cliente
+            ¿Dónde está el cliente?
           </p>
           <LocationSelector
             value={locationType}
@@ -152,14 +152,14 @@ function NewOrderForm({ onSuccess }) {
           {/* Observaciones */}
           <div>
             <label className="block text-xs font-semibold text-surface-500 mb-1.5">
-              Observación (opcional)
+              Notas (opcional)
             </label>
             <textarea
               rows={2}
               value={observations}
               onChange={e => setObservations(e.target.value)}
               className="input resize-none text-sm"
-              placeholder="Sin hielo, entregar por ventana..."
+              placeholder="Ej: Sin hielo, entregar por la ventana..."
             />
           </div>
 
@@ -181,7 +181,7 @@ function NewOrderForm({ onSuccess }) {
                 disabled={cart.length === 0 || createOrder.isPending}
                 className="w-full btn-primary py-3 text-base disabled:opacity-40"
               >
-                {createOrder.isPending ? 'Enviando...' : !isOnline ? 'Guardar (sin conexión)' : 'Confirmar pedido'}
+                {createOrder.isPending ? 'Enviando...' : !isOnline ? 'Guardar offline' : 'Enviar pedido'}
               </button>
             </div>
           </div>

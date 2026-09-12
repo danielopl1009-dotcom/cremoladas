@@ -43,7 +43,7 @@ export const useCreateOrder = () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
     onError: (error) => {
-      const msg = error.response?.data?.message || 'Error al crear el pedido';
+      const msg = error.response?.data?.message || 'No se pudo crear el pedido';
       toast.error(msg);
     },
   });
@@ -62,7 +62,7 @@ export const useUpdateOrderStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['order', String(variables.id)] });
     },
     onError: (error) => {
-      const msg = error.response?.data?.message || 'Error al actualizar el estado';
+      const msg = error.response?.data?.message || 'No se pudo actualizar';
       toast.error(msg);
     },
   });

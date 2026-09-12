@@ -59,12 +59,12 @@ export default function PaymentUploadModal({ isOpen, onClose, onUpload, orderId 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Adjuntar comprobante de pago">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Subir comprobante">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Método de pago */}
         <div>
           <label className="block text-sm font-semibold text-surface-700 dark:text-surface-300 mb-2">
-            Método de pago
+            Forma de pago
           </label>
           <div className="grid grid-cols-3 gap-2">
             {['yape', 'efectivo', 'tarjeta'].map((m) => (
@@ -87,7 +87,7 @@ export default function PaymentUploadModal({ isOpen, onClose, onUpload, orderId 
         {/* Subir foto */}
         <div>
           <label className="block text-sm font-semibold text-surface-700 dark:text-surface-300 mb-2">
-            Foto del comprobante
+            Foto
           </label>
 
           {!preview ? (
@@ -97,7 +97,7 @@ export default function PaymentUploadModal({ isOpen, onClose, onUpload, orderId 
             >
               <IcoUpload size={32} className="mx-auto mb-2 text-surface-400" />
               <p className="text-sm text-surface-600 dark:text-surface-400 font-medium mb-1">
-                Toca para seleccionar foto
+                Toca para subir foto
               </p>
               <p className="text-xs text-surface-400">JPG, PNG o HEIC</p>
             </div>
@@ -164,7 +164,7 @@ export default function PaymentUploadModal({ isOpen, onClose, onUpload, orderId 
             ) : (
               <>
                 <IcoUpload size={16} />
-                <span>Subir comprobante</span>
+                <span>Subir foto</span>
               </>
             )}
           </button>

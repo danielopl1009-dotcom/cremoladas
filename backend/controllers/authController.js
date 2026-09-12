@@ -14,14 +14,14 @@ export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password)
-      return res.status(400).json({ success: false, message: 'Usuario y contraseña requeridos' });
+      return res.status(400).json({ success: false, message: 'Falta usuario o contraseña' });
 
     const user = await User.getByUsername(username);
     if (!user || !user.active)
-      return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+      return res.status(401).json({ success: false, message: 'Usuario o contraseña incorrectos' });
 
     const ok = await User.verifyPassword(password, user.password);
-    if (!ok) return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+    if (!ok) return res.status(401).json({ success: false, message: 'Usuario o contraseña incorrectos' });
 
     // Capturar y guardar IP
     const ip = getClientIP(req);

@@ -21,14 +21,14 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.username || !form.password) { toast.error('Completa todos los campos'); return; }
+    if (!form.username || !form.password) { toast.error('Llena todos los campos'); return; }
     setLoading(true);
     try {
       const { data } = await api.post('/auth/login', form);
       login(data.data.user, data.data.token);
       navigate(ROLE_HOME[data.data.user.role] || '/', { replace: true });
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Credenciales incorrectas');
+      toast.error(err.response?.data?.message || 'Usuario o clave incorrectos');
     } finally {
       setLoading(false);
     }
@@ -57,16 +57,16 @@ export default function LoginPage() {
 
         <div className="relative z-10">
           <h2 className="text-white text-4xl font-bold leading-tight mb-4">
-            Gestión de pedidos<br />en tiempo real
+            Pedidos más rápidos,<br />clientes más felices
           </h2>
           <p className="text-brand-100 text-base leading-relaxed">
-            Sistema optimizado para jaladores, servidores y caja.<br />
-            Rápido, confiable y sin papel.
+            Del jalador a la cocina en segundos.<br />
+            Nada de papelitos ni confusión.
           </p>
         </div>
 
         <div className="relative z-10 flex gap-6">
-          {[['Jalador', 'Toma pedidos rápido'], ['Servidor', 'Prepara y entrega'], ['Caja', 'Controla pagos']].map(([r, d]) => (
+          {[['Jalador', 'Toma el pedido'], ['Servidor', 'Lo prepara'], ['Caja', 'Cobra']].map(([r, d]) => (
             <div key={r}>
               <p className="text-white font-semibold text-sm">{r}</p>
               <p className="text-brand-200 text-xs mt-0.5">{d}</p>
@@ -90,7 +90,7 @@ export default function LoginPage() {
           </div>
 
           <h1 className="text-2xl font-bold text-white mb-1">Bienvenido</h1>
-          <p className="text-surface-400 text-sm mb-8">Ingresa tus credenciales para continuar</p>
+          <p className="text-surface-400 text-sm mb-8">Ingresa tu usuario y clave</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

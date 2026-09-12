@@ -11,7 +11,7 @@ export const createOrder = async (req, res) => {
 
     for (const item of items) {
       const product = await Product.getById(item.productId);
-      if (!product) return res.status(400).json({ success: false, message: `Producto ${item.productId} no encontrado` });
+      if (!product) return res.status(400).json({ success: false, message: `Producto no encontrado` });
       if (!product.active) return res.status(400).json({ success: false, message: `${product.name} no disponible` });
 
       // Parsear sizes si es string
@@ -22,7 +22,7 @@ export const createOrder = async (req, res) => {
       
       if (unitPrice === undefined || unitPrice === null) {
         console.error('Size not found:', { productId: item.productId, size: item.size, availableSizes: Object.keys(sizes) });
-        return res.status(400).json({ success: false, message: `Tamaño "${item.size}" no disponible para ${product.name}` });
+        return res.status(400).json({ success: false, message: `Tamaño "${item.size}" no disponible` });
       }
 
       const subtotal  = unitPrice * item.quantity;
@@ -39,7 +39,7 @@ export const createOrder = async (req, res) => {
     }
 
     if (Math.abs(calculatedTotal - total) > 0.05)
-      return res.status(400).json({ success: false, message: 'Total no coincide' });
+      return res.status(400).json({ success: false, message: 'El total no coincide' });
 
     const order = await Order.create(
       { locationType, locationDetails, items: enrichedItems, observations, total: calculatedTotal, uuid },
@@ -51,9 +51,9 @@ export const createOrder = async (req, res) => {
     res.status(201).json({ success: true, data: fullOrder });
   } catch (err) {
     if (err.code === 'DUPLICATE_ORDER')
-      return res.status(409).json({ success: false, message: 'Pedido ya sincronizado' });
+      return res.status(409).json({ success: false, message: 'Pedido ya registrado' });
     console.error(err);
-    res.status(500).json({ success: false, message: 'Error al crear pedido' });
+    res.status(500).json({ success: false, message: 'No se pudo crear el pedido' });
   }
 };
 

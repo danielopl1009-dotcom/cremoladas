@@ -87,12 +87,12 @@ export default function LocationSelector({ value, details, onChange, onDetailsCh
 
       {/* Referencia adicional */}
       <div>
-        <label className="block text-xs font-semibold text-surface-500 mb-1.5">Referencia adicional (opcional)</label>
+        <label className="block text-xs font-semibold text-surface-500 mb-1.5">Referencia (opcional)</label>
         <input
           value={details.referencia || ''}
           onChange={e => onDetailsChange('referencia', e.target.value)}
           className="input text-sm"
-          placeholder="Segundo carro de la fila, frente a la puerta..."
+          placeholder="Ej: Segundo auto, ventana del copiloto..."
         />
       </div>
     </div>
