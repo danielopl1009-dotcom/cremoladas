@@ -1,7 +1,7 @@
 {
-  "name": "Cremoladas Manager",
+  "name": "Cremoladas Anabel",
   "short_name": "Cremoladas",
-  "description": "Sistema de gestión de pedidos para cremoladas",
+  "description": "Sistema de pedidos para Cremoladas Anabel",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -9,9 +9,9 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/vite.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }

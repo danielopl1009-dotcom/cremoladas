@@ -100,7 +100,7 @@ const start = async () => {
     server.listen(PORT, '0.0.0.0', () => {
       console.log(`
 ╔══════════════════════════════════════════╗
-║   CREMOLADAS MANAGER                     ║
+║   CREMOLADAS ANABEL                      ║
 ╠══════════════════════════════════════════╣
 ║  Puerto  : ${String(PORT).padEnd(30)} ║
 ║  Entorno : ${String(process.env.NODE_ENV || 'development').padEnd(30)} ║
