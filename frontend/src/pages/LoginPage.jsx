@@ -49,8 +49,7 @@ export default function LoginPage() {
               <img src="/logo.png" alt="Cremoladas Anabel" className="w-full h-full object-contain p-1.5" />
             </div>
             <div>
-              <span className="text-white font-bold text-2xl tracking-tight block leading-none">Cremoladas</span>
-              <span className="text-brand-100 text-sm font-medium block mt-0.5">Anabel</span>
+              <span className="text-white font-bold text-2xl tracking-tight block leading-none">Cremoladas Anabel</span>
             </div>
           </div>
         </div>
@@ -78,19 +77,14 @@ export default function LoginPage() {
       {/* Panel derecho — formulario */}
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-sm animate-slide-up">
-          {/* Logo mobile */}
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="w-12 h-12 rounded-xl overflow-hidden bg-white shadow-md flex items-center justify-center">
-              <img src="/logo.png" alt="Cremoladas Anabel" className="w-full h-full object-contain p-1" />
+          {/* Logo centrado */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white shadow-xl flex items-center justify-center mb-4">
+              <img src="/logo.png" alt="Cremoladas Anabel" className="w-full h-full object-contain p-2" />
             </div>
-            <div>
-              <span className="text-white font-bold text-xl block leading-none">Cremoladas</span>
-              <span className="text-surface-400 text-sm font-medium block mt-0.5">Anabel</span>
-            </div>
+            <h1 className="text-2xl font-bold text-white text-center">Cremoladas Anabel</h1>
+            <p className="text-surface-400 text-sm mt-2">Ingresa tu usuario y clave</p>
           </div>
-
-          <h1 className="text-2xl font-bold text-white mb-1">Bienvenido</h1>
-          <p className="text-surface-400 text-sm mb-8">Ingresa tu usuario y clave</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

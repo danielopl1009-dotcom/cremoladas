@@ -38,7 +38,7 @@ export default function Header({ title, subtitle }) {
       {/* Centro — título en mobile */}
       {title && (
         <p className="sm:hidden text-sm font-semibold text-surface-900 dark:text-surface-50 absolute left-1/2 -translate-x-1/2">
-          {title}
+          Cremoladas Anabel
         </p>
       )}
 

@@ -175,7 +175,7 @@ export default function CajaPage() {
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex flex-col">
-      <Header title="Cremoladas" subtitle="Caja" />
+      <Header title="Cremoladas Anabel" subtitle="Caja" />
 
       {/* Stats rápidas */}
       <div className="bg-white dark:bg-surface-900 border-b border-surface-100 dark:border-surface-800 px-4 py-3">
