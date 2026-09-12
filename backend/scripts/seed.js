@@ -31,6 +31,9 @@ const run = async () => {
     await initDB();
     console.log('Ejecutando seed...');
 
+    // Configurar timezone
+    await exec("SET timezone = 'America/Lima'");
+
     // Usuarios
     const users = [
       { name: 'Administrador', username: 'admin',  password: 'admin', role: 'administrador' },

@@ -5,6 +5,9 @@ const run = async () => {
     const pool = await initDB();
     console.log('Creando tablas...');
 
+    // Configurar timezone
+    await pool.query("SET timezone = 'America/Lima'");
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id         SERIAL PRIMARY KEY,
