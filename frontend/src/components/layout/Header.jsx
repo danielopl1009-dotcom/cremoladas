@@ -26,8 +26,8 @@ export default function Header({ title, subtitle }) {
       px-4 h-14 flex items-center justify-between sticky top-0 z-40 shrink-0">
       {/* Izquierda */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-          <IcoCup size={16} className="text-white" />
+        <div className="w-8 h-8 rounded-lg overflow-hidden bg-white dark:bg-surface-800 flex items-center justify-center shadow-sm">
+          <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-0.5" />
         </div>
         <div className="hidden sm:block">
           {title && <p className="text-sm font-semibold text-surface-900 dark:text-surface-50 leading-none">{title}</p>}

@@ -14,10 +14,17 @@ export const createOrder = async (req, res) => {
       if (!product) return res.status(400).json({ success: false, message: `Producto ${item.productId} no encontrado` });
       if (!product.active) return res.status(400).json({ success: false, message: `${product.name} no disponible` });
 
+      // Parsear sizes si es string
       const sizes = typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes;
-      if (!sizes[item.size]) return res.status(400).json({ success: false, message: `Tamaño ${item.size} no disponible` });
-
+      
+      // Buscar el precio por el nombre exacto del size
       const unitPrice = sizes[item.size];
+      
+      if (unitPrice === undefined || unitPrice === null) {
+        console.error('Size not found:', { productId: item.productId, size: item.size, availableSizes: Object.keys(sizes) });
+        return res.status(400).json({ success: false, message: `Tamaño "${item.size}" no disponible para ${product.name}` });
+      }
+
       const subtotal  = unitPrice * item.quantity;
       calculatedTotal += subtotal;
       enrichedItems.push({

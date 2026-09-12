@@ -45,10 +45,13 @@ export default function LoginPage() {
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-              <IcoCup size={22} className="text-white" />
+            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white flex items-center justify-center shadow-lg">
+              <img src="/logo.png" alt="Cremoladas Anabel" className="w-full h-full object-contain p-1.5" />
             </div>
-            <span className="text-white font-bold text-xl tracking-tight">Cremoladas</span>
+            <div>
+              <span className="text-white font-bold text-2xl tracking-tight block leading-none">Cremoladas</span>
+              <span className="text-brand-100 text-sm font-medium block mt-0.5">Anabel</span>
+            </div>
           </div>
         </div>
 
@@ -77,10 +80,13 @@ export default function LoginPage() {
         <div className="w-full max-w-sm animate-slide-up">
           {/* Logo mobile */}
           <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center">
-              <IcoCup size={22} className="text-white" />
+            <div className="w-12 h-12 rounded-xl overflow-hidden bg-white shadow-md flex items-center justify-center">
+              <img src="/logo.png" alt="Cremoladas Anabel" className="w-full h-full object-contain p-1" />
             </div>
-            <span className="text-white font-bold text-xl">Cremoladas</span>
+            <div>
+              <span className="text-white font-bold text-xl block leading-none">Cremoladas</span>
+              <span className="text-surface-400 text-sm font-medium block mt-0.5">Anabel</span>
+            </div>
           </div>
 
           <h1 className="text-2xl font-bold text-white mb-1">Bienvenido</h1>
@@ -137,7 +143,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-surface-600 text-xs mt-8">
-            Cremoladas Manager v1.0
+            Cremoladas Anabel &copy; {new Date().getFullYear()}
           </p>
         </div>
       </div>

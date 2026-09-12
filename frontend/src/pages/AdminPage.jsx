@@ -51,12 +51,12 @@ export default function AdminPage() {
         {/* Logo */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-surface-800 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center">
-              <IcoCup size={14} className="text-white" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden bg-white flex items-center justify-center shadow-sm">
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-0.5" />
             </div>
             <div>
               <p className="text-sm font-bold text-white leading-none">Cremoladas</p>
-              <p className="text-xs text-surface-500 leading-none mt-0.5">Admin</p>
+              <p className="text-xs text-surface-400 leading-none mt-0.5">Anabel</p>
             </div>
           </div>
           <button onClick={() => setOpen(false)} className="lg:hidden p-1 text-surface-400 hover:text-white">
@@ -125,10 +125,13 @@ export default function AdminPage() {
             <IcoMenu size={22} />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-brand-600 rounded-md flex items-center justify-center">
-              <IcoCup size={13} className="text-white" />
+            <div className="w-7 h-7 rounded-lg overflow-hidden bg-white dark:bg-surface-800 flex items-center justify-center shadow-sm">
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-0.5" />
             </div>
-            <span className="font-bold text-sm text-surface-900 dark:text-surface-50">Admin</span>
+            <div className="flex flex-col leading-none">
+              <span className="font-bold text-xs text-surface-900 dark:text-surface-50">Cremoladas</span>
+              <span className="text-xs text-surface-400 mt-0.5">Anabel</span>
+            </div>
           </div>
           <div className="w-8" />
         </div>

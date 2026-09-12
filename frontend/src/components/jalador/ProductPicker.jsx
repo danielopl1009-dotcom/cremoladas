@@ -162,7 +162,7 @@ export default function ProductPicker({ cart, onCartChange }) {
         productId:   selectedProduct.id,
         productName: selectedProduct.name,
         sizeName:    selectedSize,
-        size:        selectedSize,
+        size:        selectedSize, // Este es el nombre completo, ej: "Taper S/5"
         flavors:     selectedFlavors,
         unitPrice:   currentPrice,
         quantity:    1,
