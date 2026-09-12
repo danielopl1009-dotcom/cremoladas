@@ -19,7 +19,7 @@ const ROLE_BADGE = {
 
 function UserForm({ initial = {}, onSubmit, loading, isEdit }) {
   const [form, setForm] = useState({
-    name: initial.name || '', email: initial.email || '',
+    name: initial.name || '', username: initial.username || '',
     password: '', role: initial.role || 'jalador',
   });
 
@@ -39,13 +39,13 @@ function UserForm({ initial = {}, onSubmit, loading, isEdit }) {
         <input required value={form.name} onChange={e => set('name', e.target.value)} className="input" placeholder="Carlos López" />
       </div>
       <div>
-        <label className="section-title mb-1.5 block">Email *</label>
-        <input required type="email" value={form.email} onChange={e => set('email', e.target.value)} className="input" placeholder="carlos@cremoladas.com" />
+        <label className="section-title mb-1.5 block">Usuario *</label>
+        <input required type="text" value={form.username} onChange={e => set('username', e.target.value)} className="input" placeholder="carlos" />
       </div>
       <div>
         <label className="section-title mb-1.5 block">Contraseña {isEdit ? '(dejar vacío para no cambiar)' : '*'}</label>
         <input type="password" required={!isEdit} value={form.password} onChange={e => set('password', e.target.value)}
-          className="input" placeholder="mínimo 6 caracteres" />
+          className="input" placeholder="mínimo 1 carácter" />
       </div>
       <div>
         <label className="section-title mb-1.5 block">Rol *</label>
@@ -99,6 +99,7 @@ export default function UsersAdmin() {
             <tr>
               <th>Usuario</th>
               <th>Rol</th>
+              <th>IP / Último acceso</th>
               <th>Estado</th>
               <th></th>
             </tr>
@@ -114,7 +115,7 @@ export default function UsersAdmin() {
                     </div>
                     <div>
                       <p className="font-semibold text-sm text-surface-900 dark:text-surface-50">{u.name}</p>
-                      <p className="text-xs text-surface-400">{u.email}</p>
+                      <p className="text-xs text-surface-400">{u.username}</p>
                     </div>
                   </div>
                 </td>
@@ -122,6 +123,23 @@ export default function UsersAdmin() {
                   <span className={`badge ${ROLE_BADGE[u.role] || ''}`}>
                     {ROLES.find(r => r.id === u.role)?.label}
                   </span>
+                </td>
+                <td>
+                  {u.last_ip ? (
+                    <div>
+                      <p className="text-xs font-mono text-surface-900 dark:text-surface-50">{u.last_ip}</p>
+                      {u.last_login && (
+                        <p className="text-xs text-surface-400 mt-0.5">
+                          {new Date(u.last_login).toLocaleString('es-PE', { 
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-surface-400">Sin acceso aún</span>
+                  )}
                 </td>
                 <td>
                   <span className={`badge ${u.active ? 'badge-ready' : 'badge-cancelled'}`}>

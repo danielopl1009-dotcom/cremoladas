@@ -6,7 +6,7 @@ export const createUser = async (req, res) => {
     res.status(201).json({ success: true, data: u });
   } catch (e) {
     if (e.message?.includes('unique') || e.message?.includes('UNIQUE'))
-      return res.status(409).json({ success: false, message: 'Email ya registrado' });
+      return res.status(409).json({ success: false, message: 'Usuario ya registrado' });
     res.status(500).json({ success: false, message: e.message });
   }
 };

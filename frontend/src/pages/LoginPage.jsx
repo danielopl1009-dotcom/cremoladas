@@ -13,7 +13,7 @@ const ROLE_HOME = {
 export default function LoginPage() {
   const navigate = useNavigate();
   const { isAuthenticated, user, login } = useAuthStore();
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ username: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +21,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.email || !form.password) { toast.error('Completa todos los campos'); return; }
+    if (!form.username || !form.password) { toast.error('Completa todos los campos'); return; }
     setLoading(true);
     try {
       const { data } = await api.post('/auth/login', form);
@@ -89,16 +89,16 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">
-                Correo electrónico
+                Usuario
               </label>
               <input
-                type="email"
-                autoComplete="email"
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                type="text"
+                autoComplete="username"
+                value={form.username}
+                onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
                 className="input bg-surface-900 border-surface-700 text-white placeholder:text-surface-600
                   focus:ring-brand-500 focus:border-brand-500"
-                placeholder="usuario@cremoladas.com"
+                placeholder="usuario"
               />
             </div>
 
@@ -114,7 +114,7 @@ export default function LoginPage() {
                   onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                   className="input bg-surface-900 border-surface-700 text-white placeholder:text-surface-600
                     focus:ring-brand-500 focus:border-brand-500 pr-12"
-                  placeholder="••••••••"
+                  placeholder="•••"
                 />
                 <button
                   type="button"

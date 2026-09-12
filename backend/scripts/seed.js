@@ -33,13 +33,13 @@ const run = async () => {
 
     // Usuarios
     const users = [
-      { name: 'Administrador', email: 'admin@cremoladas.com',  password: 'admin123', role: 'administrador' },
-      { name: 'Carlos López',  email: 'carlos@cremoladas.com', password: '123456',   role: 'jalador' },
-      { name: 'Luis Martínez', email: 'luis@cremoladas.com',   password: '123456',   role: 'jalador' },
-      { name: 'Pedro García',  email: 'pedro@cremoladas.com',  password: '123456',   role: 'jalador' },
-      { name: 'Ana Torres',    email: 'ana@cremoladas.com',    password: '123456',   role: 'servidor' },
-      { name: 'María Flores',  email: 'maria@cremoladas.com',  password: '123456',   role: 'servidor' },
-      { name: 'Rosa Quispe',   email: 'rosa@cremoladas.com',   password: '123456',   role: 'caja' },
+      { name: 'Administrador', username: 'admin',  password: 'admin', role: 'administrador' },
+      { name: 'Carlos López',  username: 'carlos', password: '123',   role: 'jalador' },
+      { name: 'Luis Martínez', username: 'luis',   password: '123',   role: 'jalador' },
+      { name: 'Pedro García',  username: 'pedro',  password: '123',   role: 'jalador' },
+      { name: 'Ana Torres',    username: 'ana',    password: '123',   role: 'servidor' },
+      { name: 'María Flores',  username: 'maria',  password: '123',   role: 'servidor' },
+      { name: 'Rosa Quispe',   username: 'rosa',   password: '123',   role: 'caja' },
     ];
 
     let userCount = 0;
@@ -47,8 +47,8 @@ const run = async () => {
       const hash = await bcrypt.hash(u.password, 10);
       try {
         await exec(
-          `INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)`,
-          [u.name, u.email, hash, u.role]
+          `INSERT INTO users (name, username, password, role) VALUES ($1, $2, $3, $4)`,
+          [u.name, u.username, hash, u.role]
         );
         userCount++;
       } catch (e) {
@@ -97,10 +97,10 @@ const run = async () => {
     console.log('\n────────────────────────────────────────────');
     console.log('  CREDENCIALES DE ACCESO');
     console.log('────────────────────────────────────────────');
-    console.log('  admin@cremoladas.com     →  admin123  (Administrador)');
-    console.log('  carlos@cremoladas.com    →  123456    (Jalador)');
-    console.log('  ana@cremoladas.com       →  123456    (Servidor)');
-    console.log('  rosa@cremoladas.com      →  123456    (Caja)');
+    console.log('  admin   →  admin  (Administrador)');
+    console.log('  carlos  →  123    (Jalador)');
+    console.log('  ana     →  123    (Servidor)');
+    console.log('  rosa    →  123    (Caja)');
     console.log('────────────────────────────────────────────\n');
 
     await closeDB();
