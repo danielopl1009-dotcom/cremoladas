@@ -14,12 +14,13 @@ export const useProducts = (activeOnly = true) => {
   });
 };
 
-// Sabores disponibles
-export const useFlavors = () => {
+// Sabores disponibles (con filtrado opcional por tipo: 'cremolada' o 'helado')
+export const useFlavors = (type = null) => {
   return useQuery({
-    queryKey: ['flavors'],
+    queryKey: ['flavors', type],
     queryFn: async () => {
-      const { data } = await api.get('/products/flavors');
+      const url = type ? `/products/flavors?type=${type}` : '/products/flavors';
+      const { data } = await api.get(url);
       return data.data;
     },
     staleTime: 15 * 60 * 1000, // los sabores cambian poco

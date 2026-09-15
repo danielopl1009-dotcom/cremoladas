@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { formatDistanceToNow, format, differenceInMinutes } from 'date-fns';
 import { es } from 'date-fns/locale';
 import clsx from 'clsx';
-import { IcoCar, IcoHome, IcoStore, IcoMapPin, IcoUpload } from '../ui/Icons.jsx';
+import { IcoCar, IcoHome, IcoStore, IcoMapPin, IcoChevronD, IcoUpload } from '../ui/Icons.jsx';
 import StatusBadge from '../ui/StatusBadge.jsx';
 import { PaymentBadge } from '../ui/PaymentBadge.jsx';
 import PaymentUploadModal from './PaymentUploadModal.jsx';

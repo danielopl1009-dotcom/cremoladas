@@ -4,15 +4,17 @@ import { useProducts, useFlavors } from '../../hooks/useProducts.js';
 import { IcoPlus, IcoMinus, IcoTrash, IcoChevronD } from '../ui/Icons.jsx';
 
 // ── Selector de sabores (hasta 3) ───────────────────────────────────────────
-function FlavorSelector({ selected, onChange }) {
-  const { data: flavors = [] } = useFlavors();
+function FlavorSelector({ selected, onChange, productType = 'cremolada' }) {
+  const { data: flavors = [] } = useFlavors(productType);
   const [open, setOpen] = useState(false);
 
   const toggle = (name) => {
     if (selected.includes(name)) {
       onChange(selected.filter(f => f !== name));
     } else {
-      if (selected.length >= 3) return; // máximo 3
+      // Limitar según tipo de producto
+      const maxFlavors = productType === 'helado' ? 3 : 3; // Ice cream max 3 balls, cremolada max 3
+      if (selected.length >= maxFlavors) return;
       onChange([...selected, name]);
     }
   };
@@ -133,6 +135,14 @@ export default function ProductPicker({ cart, onCartChange }) {
     return <div className="flex justify-center py-8"><div className="spinner text-brand-500" /></div>;
   }
 
+  // Identificar si el producto seleccionado es helado o cremolada
+  const isIceCream = selectedProduct && [
+    'Conazo Grande', 'Conazo Mediano', 'Helado Cono/Vaso', 
+    'Payasito', 'Arañita', 'Banana Split'
+  ].includes(selectedProduct.name);
+
+  const productType = isIceCream ? 'helado' : 'cremolada';
+
   // Obtener tamaños del producto seleccionado
   const currentSizes = selectedProduct
     ? Object.entries(
@@ -198,7 +208,7 @@ export default function ProductPicker({ cart, onCartChange }) {
             <button
               key={p.id}
               type="button"
-              onClick={() => { setSelectedProduct(p); setSelectedSize(''); }}
+              onClick={() => { setSelectedProduct(p); setSelectedSize(''); setSelectedFlavors([]); }}
               className={clsx(
                 'px-4 py-2 rounded-xl text-sm font-semibold border transition-all',
                 selectedProduct?.id === p.id
@@ -243,7 +253,11 @@ export default function ProductPicker({ cart, onCartChange }) {
       {selectedSize && (
         <div className="animate-fade-in">
           <p className="section-title mb-2">Sabor(es) — hasta 3</p>
-          <FlavorSelector selected={selectedFlavors} onChange={setSelectedFlavors} />
+          <FlavorSelector 
+            selected={selectedFlavors} 
+            onChange={setSelectedFlavors}
+            productType={productType}
+          />
         </div>
       )}
 

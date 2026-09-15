@@ -58,3 +58,4 @@ export const IcoArrowRight = icon(<><line x1="5" y1="12" x2="19" y2="12"/><polyl
 export const IcoFilter    = icon(<><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>, { stroke: true });
 export const IcoCreditCard = icon(<><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></>, { stroke: true });
 export const IcoClipboardCheck = icon(<><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></>, { stroke: true });
+export const IcoUpload     = icon(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></>, { stroke: true });

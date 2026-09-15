@@ -1,11 +1,17 @@
 import { initDB, query, exec, closeDB } from '../config/database.js';
 import bcrypt from 'bcryptjs';
 
-const SABORES = [
-  'Lúcuma', 'Maracuyá', 'Fresa', 'Fresa con leche', 'Limón', 'Tuna', 
-  'Sandía', 'Camu camu', 'Guanábana', 'Tamarindo', 'Coco', 'Algarrobina',
-  'Capuchino', 'Chirimoya', 'Aguaymanto', 'Maracumango', 'Maní con leche',
-  'Uva', 'Borgoña', 'Arándano', 'Chicha', 'Tutti frutti',
+// Ice cream flavors (helados) - 10 options
+const FLAVORES_HELADO = [
+  'Lúcuma', 'Fresa con leche', 'Frutos del Bosque', 'Chocolate', 'Choco Maní', 
+  'Oreo', 'Algarrobina', 'Ron Pasas', 'Coco', 'Menta Chips'
+];
+
+// Cremolada flavors (cremoladas) - traditional Peruvian flavors
+const FLAVORES_CREMOLADA = [
+  'Maracuyá', 'Fresa', 'Limón', 'Tuna', 'Sandía', 'Camu camu', 'Guanábana', 
+  'Tamarindo', 'Capuchino', 'Chirimoya', 'Aguaymanto', 'Maracumango', 'Maní con leche',
+  'Uva', 'Borgoña', 'Arándano', 'Chicha', 'Tutti frutti'
 ];
 
 const PRODUCTOS = [
@@ -23,6 +29,36 @@ const PRODUCTOS = [
     name: 'Litro',
     description: 'Cremolada por litro',
     sizes: { 'Litro S/16': 16 },
+  },
+  {
+    name: 'Conazo Grande',
+    description: 'Helado 3 bolas',
+    sizes: { 'Conazo Grande 3 bolas - S/15': 15 },
+  },
+  {
+    name: 'Conazo Mediano',
+    description: 'Helado 2 bolas',
+    sizes: { 'Conazo Mediano 2 bolas - S/10': 10 },
+  },
+  {
+    name: 'Helado Cono/Vaso',
+    description: 'Helado 1 bola en cono o vaso',
+    sizes: { 'Helado Cono/Vaso 1 bola - S/4': 4 },
+  },
+  {
+    name: 'Payasito',
+    description: 'Helado 1 bola decorada',
+    sizes: { 'Payasito 1 bola - S/7': 7 },
+  },
+  {
+    name: 'Arañita',
+    description: 'Helado 2 bolas',
+    sizes: { 'Arañita 2 bolas - S/12': 12 },
+  },
+  {
+    name: 'Banana Split',
+    description: 'Helado 3 bolas',
+    sizes: { 'Banana Split 3 bolas - S/15': 15 },
   },
 ];
 
@@ -80,22 +116,49 @@ const run = async () => {
     }
     console.log(`✓ ${productCount} productos nuevos creados (${PRODUCTOS.length} total)`);
 
-    // Sabores
+    // Sabores - Asegurar que la columna 'type' existe
+    try {
+      await exec(`ALTER TABLE flavors ADD COLUMN type VARCHAR(20) DEFAULT 'cremolada' CHECK(type IN ('cremolada', 'helado', 'ambos'))`);
+      console.log('✓ Columna "type" añadida a flavors');
+    } catch (e) {
+      if (!e.message.includes('already exists')) {
+        console.log('⚠️  Columna "type" ya existe o error menor:', e.message.substring(0, 50));
+      }
+    }
+
+    // Insertar sabores de helado
     let flavorCount = 0;
-    for (let i = 0; i < SABORES.length; i++) {
+    for (let i = 0; i < FLAVORES_HELADO.length; i++) {
       try {
         await exec(
-          `INSERT INTO flavors (name, sort_order) VALUES ($1, $2)`,
-          [SABORES[i], i]
+          `INSERT INTO flavors (name, type, sort_order, active) VALUES ($1, $2, $3, true)
+           ON CONFLICT (name) DO UPDATE SET type = EXCLUDED.type`,
+          [FLAVORES_HELADO[i], 'helado', i]
         );
         flavorCount++;
       } catch (e) {
-        if (!e.message.includes('duplicate') && !e.message.includes('unique')) {
-          console.error('Error insertando sabor:', e.message);
+        if (!e.message.includes('duplicate') && !e.message.includes('unique') && !e.message.includes('ON CONFLICT')) {
+          console.error('Error insertando sabor helado:', e.message);
         }
       }
     }
-    console.log(`✓ ${flavorCount} sabores nuevos creados (${SABORES.length} total)`);
+
+    // Insertar sabores de cremolada
+    for (let i = 0; i < FLAVORES_CREMOLADA.length; i++) {
+      try {
+        await exec(
+          `INSERT INTO flavors (name, type, sort_order, active) VALUES ($1, $2, $3, true)
+           ON CONFLICT (name) DO UPDATE SET type = EXCLUDED.type`,
+          [FLAVORES_CREMOLADA[i], 'cremolada', i + FLAVORES_HELADO.length]
+        );
+        flavorCount++;
+      } catch (e) {
+        if (!e.message.includes('duplicate') && !e.message.includes('unique') && !e.message.includes('ON CONFLICT')) {
+          console.error('Error insertando sabor cremolada:', e.message);
+        }
+      }
+    }
+    console.log(`✓ ${flavorCount} sabores nuevos creados (${FLAVORES_HELADO.length} helado + ${FLAVORES_CREMOLADA.length} cremolada)`);
 
     console.log('\n────────────────────────────────────────────');
     console.log('  CREDENCIALES DE ACCESO');

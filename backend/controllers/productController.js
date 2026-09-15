@@ -17,7 +17,17 @@ export const getProducts = async (req, res) => {
 
 export const getFlavors = async (req, res) => {
   try {
-    const result = await query('SELECT id, name, sort_order FROM flavors WHERE active = true ORDER BY sort_order ASC');
+    let sql = 'SELECT id, name, type, sort_order FROM flavors WHERE active = true';
+    const params = [];
+    
+    // Filtrar por tipo si se proporciona
+    if (req.query.type) {
+      sql += ' AND (type = $1 OR type = $2)';
+      params.push(req.query.type, 'ambos');
+    }
+    
+    sql += ' ORDER BY sort_order ASC';
+    const result = await query(sql, params);
     res.json({ success: true, data: result });
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
