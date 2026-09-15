@@ -2,65 +2,91 @@ import { initDB, query, exec, closeDB } from '../config/database.js';
 import bcrypt from 'bcryptjs';
 
 // Ice cream flavors (helados) - 10 options
+// ═══════════════════════════════════════════════════════════════════════════════
+// SABORES DE HELADO (Ice Cream)
+// ═══════════════════════════════════════════════════════════════════════════════
 const FLAVORES_HELADO = [
   'Lúcuma', 'Fresa con leche', 'Frutos del Bosque', 'Chocolate', 'Choco Maní', 
   'Oreo', 'Algarrobina', 'Ron Pasas', 'Coco', 'Menta Chips'
 ];
 
-// Cremolada flavors (cremoladas) - traditional Peruvian flavors
+// ═══════════════════════════════════════════════════════════════════════════════
+// SABORES DE CREMOLADA (Shaved Ice Peruvian Style)
+// ═══════════════════════════════════════════════════════════════════════════════
 const FLAVORES_CREMOLADA = [
   'Maracuyá', 'Fresa', 'Limón', 'Tuna', 'Sandía', 'Camu camu', 'Guanábana', 
   'Tamarindo', 'Capuchino', 'Chirimoya', 'Aguaymanto', 'Maracumango', 'Maní con leche',
   'Uva', 'Borgoña', 'Arándano', 'Chicha', 'Tutti frutti'
 ];
 
-const PRODUCTOS = [
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRODUCTOS CREMOLADAS
+// ═══════════════════════════════════════════════════════════════════════════════
+const PRODUCTOS_CREMOLADAS = [
   {
     name: 'Vaso',
     description: 'Cremolada en vaso',
+    type: 'cremolada',
     sizes: { 'Vaso S/4': 4, 'Vaso S/5': 5, 'Vaso S/6': 6, 'Vaso S/7': 7, 'Vaso S/9': 9 },
   },
   {
     name: 'Taper',
     description: 'Cremolada en taper', 
+    type: 'cremolada',
     sizes: { 'Taper S/4': 4, 'Taper S/5': 5, 'Taper S/8 (medio litro)': 8 },
   },
   {
     name: 'Litro',
     description: 'Cremolada por litro',
+    type: 'cremolada',
     sizes: { 'Litro S/16': 16 },
   },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRODUCTOS HELADOS (Ice Cream) - con presentaciones exactas y precios fijos
+// ═══════════════════════════════════════════════════════════════════════════════
+const PRODUCTOS_HELADOS = [
   {
     name: 'Conazo Grande',
-    description: 'Helado 3 bolas',
+    description: 'Helado 3 bolas - S/15',
+    type: 'helado',
     sizes: { 'Conazo Grande 3 bolas - S/15': 15 },
   },
   {
     name: 'Conazo Mediano',
-    description: 'Helado 2 bolas',
+    description: 'Helado 2 bolas - S/10',
+    type: 'helado',
     sizes: { 'Conazo Mediano 2 bolas - S/10': 10 },
   },
   {
     name: 'Helado Cono/Vaso',
-    description: 'Helado 1 bola en cono o vaso',
+    description: 'Helado 1 bola en cono o vaso - S/4',
+    type: 'helado',
     sizes: { 'Helado Cono/Vaso 1 bola - S/4': 4 },
   },
   {
     name: 'Payasito',
-    description: 'Helado 1 bola decorada',
+    description: 'Helado 1 bola decorada - S/7',
+    type: 'helado',
     sizes: { 'Payasito 1 bola - S/7': 7 },
   },
   {
     name: 'Arañita',
-    description: 'Helado 2 bolas',
+    description: 'Helado 2 bolas - S/12',
+    type: 'helado',
     sizes: { 'Arañita 2 bolas - S/12': 12 },
   },
   {
     name: 'Banana Split',
-    description: 'Helado 3 bolas',
+    description: 'Helado 3 bolas - S/15',
+    type: 'helado',
     sizes: { 'Banana Split 3 bolas - S/15': 15 },
   },
 ];
+
+// Combinar para inserción
+const PRODUCTOS = [...PRODUCTOS_CREMOLADAS, ...PRODUCTOS_HELADOS];
 
 const run = async () => {
   try {
@@ -99,34 +125,41 @@ const run = async () => {
     }
     console.log(`✓ ${userCount} usuarios nuevos creados (${users.length} total)`);
 
-    // Productos
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Productos (con tipo: cremolada o helado)
+    // ─────────────────────────────────────────────────────────────────────────────
     let productCount = 0;
     for (const p of PRODUCTOS) {
       try {
         await exec(
-          `INSERT INTO products (name, description, sizes, active) VALUES ($1, $2, $3, true)`,
-          [p.name, p.description, JSON.stringify(p.sizes)]
+          `INSERT INTO products (name, description, sizes, type, active) VALUES ($1, $2, $3, $4, true)
+           ON CONFLICT (name) DO UPDATE SET type = EXCLUDED.type`,
+          [p.name, p.description, JSON.stringify(p.sizes), p.type]
         );
         productCount++;
       } catch (e) {
-        if (!e.message.includes('duplicate') && !e.message.includes('unique')) {
+        if (!e.message.includes('duplicate') && !e.message.includes('unique') && !e.message.includes('ON CONFLICT')) {
           console.error('Error insertando producto:', e.message);
         }
       }
     }
-    console.log(`✓ ${productCount} productos nuevos creados (${PRODUCTOS.length} total)`);
+    console.log(`✓ ${productCount} productos creados (${PRODUCTOS_CREMOLADAS.length} cremoladas + ${PRODUCTOS_HELADOS.length} helados)`);
 
-    // Sabores - Asegurar que la columna 'type' existe
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Sabores (con tipo: helado o cremolada)
+    // ─────────────────────────────────────────────────────────────────────────────
     try {
+      // Intentar agregar columna 'type' si no existe
       await exec(`ALTER TABLE flavors ADD COLUMN type VARCHAR(20) DEFAULT 'cremolada' CHECK(type IN ('cremolada', 'helado', 'ambos'))`);
-      console.log('✓ Columna "type" añadida a flavors');
+      console.log('✓ Columna "type" agregada a tabla flavors');
     } catch (e) {
-      if (!e.message.includes('already exists')) {
-        console.log('⚠️  Columna "type" ya existe o error menor:', e.message.substring(0, 50));
+      // Columna ya existe o error menor - no es crítico
+      if (e.message.includes('already exists')) {
+        console.log('✓ Columna "type" ya existe en flavors');
       }
     }
 
-    // Insertar sabores de helado
+    // Insertar sabores de HELADO
     let flavorCount = 0;
     for (let i = 0; i < FLAVORES_HELADO.length; i++) {
       try {
@@ -137,13 +170,13 @@ const run = async () => {
         );
         flavorCount++;
       } catch (e) {
-        if (!e.message.includes('duplicate') && !e.message.includes('unique') && !e.message.includes('ON CONFLICT')) {
-          console.error('Error insertando sabor helado:', e.message);
+        if (!e.message.includes('duplicate') && !e.message.includes('ON CONFLICT')) {
+          console.error('Error sabor helado:', e.message.substring(0, 50));
         }
       }
     }
 
-    // Insertar sabores de cremolada
+    // Insertar sabores de CREMOLADA
     for (let i = 0; i < FLAVORES_CREMOLADA.length; i++) {
       try {
         await exec(
@@ -153,12 +186,12 @@ const run = async () => {
         );
         flavorCount++;
       } catch (e) {
-        if (!e.message.includes('duplicate') && !e.message.includes('unique') && !e.message.includes('ON CONFLICT')) {
-          console.error('Error insertando sabor cremolada:', e.message);
+        if (!e.message.includes('duplicate') && !e.message.includes('ON CONFLICT')) {
+          console.error('Error sabor cremolada:', e.message.substring(0, 50));
         }
       }
     }
-    console.log(`✓ ${flavorCount} sabores nuevos creados (${FLAVORES_HELADO.length} helado + ${FLAVORES_CREMOLADA.length} cremolada)`);
+    console.log(`✓ ${flavorCount} sabores creados (${FLAVORES_HELADO.length} helados + ${FLAVORES_CREMOLADA.length} cremoladas)`);
 
     console.log('\n────────────────────────────────────────────');
     console.log('  CREDENCIALES DE ACCESO');

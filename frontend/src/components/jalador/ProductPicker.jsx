@@ -135,13 +135,8 @@ export default function ProductPicker({ cart, onCartChange }) {
     return <div className="flex justify-center py-8"><div className="spinner text-brand-500" /></div>;
   }
 
-  // Identificar si el producto seleccionado es helado o cremolada
-  const isIceCream = selectedProduct && [
-    'Conazo Grande', 'Conazo Mediano', 'Helado Cono/Vaso', 
-    'Payasito', 'Arañita', 'Banana Split'
-  ].includes(selectedProduct.name);
-
-  const productType = isIceCream ? 'helado' : 'cremolada';
+  // Obtener tipo de producto (helado o cremolada) desde la BD
+  const productType = selectedProduct?.type || 'cremolada';
 
   // Obtener tamaños del producto seleccionado
   const currentSizes = selectedProduct
