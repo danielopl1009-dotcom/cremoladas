@@ -147,17 +147,8 @@ const run = async () => {
 
     // ─────────────────────────────────────────────────────────────────────────────
     // Sabores (con tipo: helado o cremolada)
+    // Las columnas 'type' ya existen en la BD (creadas en initDatabase.js)
     // ─────────────────────────────────────────────────────────────────────────────
-    try {
-      // Intentar agregar columna 'type' si no existe
-      await exec(`ALTER TABLE flavors ADD COLUMN type VARCHAR(20) DEFAULT 'cremolada' CHECK(type IN ('cremolada', 'helado', 'ambos'))`);
-      console.log('✓ Columna "type" agregada a tabla flavors');
-    } catch (e) {
-      // Columna ya existe o error menor - no es crítico
-      if (e.message.includes('already exists')) {
-        console.log('✓ Columna "type" ya existe en flavors');
-      }
-    }
 
     // Insertar sabores de HELADO
     let flavorCount = 0;

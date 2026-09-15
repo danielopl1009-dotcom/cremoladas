@@ -24,13 +24,10 @@ const run = async () => {
 
       CREATE TABLE IF NOT EXISTS products (
         id          SERIAL PRIMARY KEY,
-<<<<<<< HEAD
         name        VARCHAR(100) UNIQUE NOT NULL,
-=======
-        name        VARCHAR(100) NOT NULL,
->>>>>>> dcb9654 (Fix: Use pg driver and DATABASE_URL for Render)
         description TEXT,
         sizes       JSONB NOT NULL,
+        type        VARCHAR(20) DEFAULT 'cremolada' CHECK(type IN ('cremolada', 'helado')),
         active      BOOLEAN DEFAULT true,
         image_url   VARCHAR(255),
         created_at  TIMESTAMP DEFAULT NOW(),
@@ -100,6 +97,7 @@ const run = async () => {
       CREATE TABLE IF NOT EXISTS flavors (
         id         SERIAL PRIMARY KEY,
         name       TEXT UNIQUE NOT NULL,
+        type       VARCHAR(20) DEFAULT 'cremolada' CHECK(type IN ('cremolada', 'helado', 'ambos')),
         active     BOOLEAN DEFAULT true,
         sort_order INTEGER DEFAULT 0
       );

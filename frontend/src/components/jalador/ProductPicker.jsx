@@ -12,9 +12,7 @@ function FlavorSelector({ selected, onChange, productType = 'cremolada' }) {
     if (selected.includes(name)) {
       onChange(selected.filter(f => f !== name));
     } else {
-      // Limitar según tipo de producto
-      const maxFlavors = productType === 'helado' ? 3 : 3; // Ice cream max 3 balls, cremolada max 3
-      if (selected.length >= maxFlavors) return;
+      if (selected.length >= 3) return;
       onChange([...selected, name]);
     }
   };
@@ -124,19 +122,23 @@ function CartRow({ item, onIncrease, onDecrease, onRemove }) {
   );
 }
 
-// ── Selector principal ───────────────────────────────────────────────────────
+// ── Selector principal con PESTAÑAS ─────────────────────────────────────────
 export default function ProductPicker({ cart, onCartChange }) {
-  const { data: products = [], isLoading } = useProducts(true);
+  const { data: allProducts = [], isLoading } = useProducts(true);
+  const [activeTab, setActiveTab] = useState('cremolada'); // 'cremolada' | 'helado'
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selectedSize, setSelectedSize]   = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
   const [selectedFlavors, setSelectedFlavors] = useState([]);
 
   if (isLoading) {
     return <div className="flex justify-center py-8"><div className="spinner text-brand-500" /></div>;
   }
 
-  // Obtener tipo de producto (helado o cremolada) desde la BD
-  const productType = selectedProduct?.type || 'cremolada';
+  // Filtrar productos por tipo según la pestaña activa
+  const products = allProducts.filter(p => p.type === activeTab);
+
+  // Obtener tipo de producto desde BD
+  const productType = selectedProduct?.type || activeTab;
 
   // Obtener tamaños del producto seleccionado
   const currentSizes = selectedProduct
@@ -164,14 +166,14 @@ export default function ProductPicker({ cart, onCartChange }) {
     } else {
       onCartChange([...cart, {
         key,
-        productId:   selectedProduct.id,
+        productId: selectedProduct.id,
         productName: selectedProduct.name,
-        sizeName:    selectedSize,
-        size:        selectedSize, // Este es el nombre completo, ej: "Taper S/5"
-        flavors:     selectedFlavors,
-        unitPrice:   currentPrice,
-        quantity:    1,
-        subtotal:    currentPrice,
+        sizeName: selectedSize,
+        size: selectedSize,
+        flavors: selectedFlavors,
+        unitPrice: currentPrice,
+        quantity: 1,
+        subtotal: currentPrice,
       }]);
     }
     setSelectedFlavors([]);
@@ -195,6 +197,46 @@ export default function ProductPicker({ cart, onCartChange }) {
 
   return (
     <div className="space-y-4">
+      {/* ════════════════════════════════════════════════════════════════════════ */
+      {/* PESTAÑAS: CREMOLADAS vs HELADOS */
+      {/* ════════════════════════════════════════════════════════════════════════ */}
+      <div className="flex gap-2 border-b border-surface-200 dark:border-surface-700">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('cremolada');
+            setSelectedProduct(null);
+            setSelectedSize('');
+            setSelectedFlavors([]);
+          }}
+          className={clsx(
+            'flex-1 py-3 px-4 text-sm font-semibold border-b-2 transition-all',
+            activeTab === 'cremolada'
+              ? 'border-brand-600 text-brand-600 dark:text-brand-400'
+              : 'border-transparent text-surface-500 hover:text-surface-700 dark:text-surface-400 dark:hover:text-surface-300'
+          )}
+        >
+          🍛 CREMOLADAS
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('helado');
+            setSelectedProduct(null);
+            setSelectedSize('');
+            setSelectedFlavors([]);
+          }}
+          className={clsx(
+            'flex-1 py-3 px-4 text-sm font-semibold border-b-2 transition-all',
+            activeTab === 'helado'
+              ? 'border-brand-600 text-brand-600 dark:text-brand-400'
+              : 'border-transparent text-surface-500 hover:text-surface-700 dark:text-surface-400 dark:hover:text-surface-300'
+          )}
+        >
+          🍦 HELADOS
+        </button>
+      </div>
+
       {/* Paso 1: Envase */}
       <div>
         <p className="section-title mb-2">Envase</p>
@@ -203,7 +245,11 @@ export default function ProductPicker({ cart, onCartChange }) {
             <button
               key={p.id}
               type="button"
-              onClick={() => { setSelectedProduct(p); setSelectedSize(''); setSelectedFlavors([]); }}
+              onClick={() => {
+                setSelectedProduct(p);
+                setSelectedSize('');
+                setSelectedFlavors([]);
+              }}
               className={clsx(
                 'px-4 py-2 rounded-xl text-sm font-semibold border transition-all',
                 selectedProduct?.id === p.id
@@ -248,8 +294,8 @@ export default function ProductPicker({ cart, onCartChange }) {
       {selectedSize && (
         <div className="animate-fade-in">
           <p className="section-title mb-2">Sabor(es) — hasta 3</p>
-          <FlavorSelector 
-            selected={selectedFlavors} 
+          <FlavorSelector
+            selected={selectedFlavors}
             onChange={setSelectedFlavors}
             productType={productType}
           />
