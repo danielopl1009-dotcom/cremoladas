@@ -5,15 +5,15 @@ class User {
   static async create(data) {
     const hash = await bcrypt.hash(data.password, 10);
     const result = await query(
-      `INSERT INTO users (name,username,password,role,active)
-       VALUES ($1,$2,$3,$4,$5) RETURNING id,name,username,role,active,created_at`,
-      [data.name, data.username, hash, data.role, data.active !== undefined ? data.active : true]
+      `INSERT INTO users (name,username,password,role,active,can_access_caja)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING id,name,username,role,active,can_access_caja,created_at`,
+      [data.name, data.username, hash, data.role, data.active !== undefined ? data.active : true, false]
     );
     return result[0];
   }
 
   static async getAll(filters = {}) {
-    let sql = 'SELECT id,name,username,role,active,last_ip,last_login,created_at FROM users WHERE 1=1';
+    let sql = 'SELECT id,name,username,role,active,can_access_caja,last_ip,last_login,created_at FROM users WHERE 1=1';
     const params = [];
     let paramCount = 1;
     
@@ -31,7 +31,7 @@ class User {
   }
 
   static async getById(id) {
-    const result = await query('SELECT id,name,username,role,active,last_ip,last_login,created_at FROM users WHERE id=$1', [id]);
+    const result = await query('SELECT id,name,username,role,active,can_access_caja,last_ip,last_login,created_at FROM users WHERE id=$1', [id]);
     return result[0] || null;
   }
 
@@ -49,11 +49,12 @@ class User {
       sets.push(`${col}=$${paramCount++}`); 
     };
     
-    if (data.name     !== undefined) add('name', data.name);
-    if (data.username !== undefined) add('username', data.username);
-    if (data.role     !== undefined) add('role', data.role);
-    if (data.active   !== undefined) add('active', data.active);
-    if (data.password !== undefined) add('password', await bcrypt.hash(data.password, 10));
+    if (data.name            !== undefined) add('name', data.name);
+    if (data.username        !== undefined) add('username', data.username);
+    if (data.role            !== undefined) add('role', data.role);
+    if (data.active          !== undefined) add('active', data.active);
+    if (data.can_access_caja !== undefined) add('can_access_caja', data.can_access_caja);
+    if (data.password        !== undefined) add('password', await bcrypt.hash(data.password, 10));
     
     if (!sets.length) throw new Error('Nada que actualizar');
     
@@ -61,7 +62,7 @@ class User {
     params.push(id);
     
     const result = await query(
-      `UPDATE users SET ${sets.join(',')} WHERE id=$${paramCount++} RETURNING id,name,username,role,active`,
+      `UPDATE users SET ${sets.join(',')} WHERE id=$${paramCount++} RETURNING id,name,username,role,active,can_access_caja`,
       params
     );
     return result[0] || null;
@@ -82,6 +83,16 @@ class User {
     const result = await query('UPDATE users SET active=true WHERE id=$1 RETURNING id,name,username,role,active', [id]);
     return result[0] || null;
   }
-}
 
-export default User;
+  static async toggleCajaAccess(id) {
+    const user = await this.getById(id);
+    if (!user) throw new Error('Usuario no encontrado');
+    
+    const newValue = !user.can_access_caja;
+    const result = await query(
+      'UPDATE users SET can_access_caja=$1 WHERE id=$2 RETURNING id,name,username,role,active,can_access_caja',
+      [newValue, id]
+    );
+    return result[0] || null;
+  }
+}

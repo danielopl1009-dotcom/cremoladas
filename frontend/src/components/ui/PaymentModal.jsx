@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import clsx from 'clsx';
 import Modal from './Modal.jsx';
+import CameraCapture from './CameraCapture.jsx';
 import { PaymentBadge } from './PaymentBadge.jsx';
 import { IcoCheckCircle, IcoAlertCircle } from './Icons.jsx';
 import { useConfirmPayment, usePayment } from '../../hooks/usePayments.js';
@@ -23,10 +24,12 @@ const METHODS = [
  */
 export default function PaymentModal({ order, open, onClose }) {
   const [method, setMethod]     = useState('efectivo');
+  const [monto_pagado, setMontoPagado] = useState('');
   const [yapeFile, setYapeFile] = useState(null);
-  const [preview, setPreview]   = useState(null);
+  const [yapePreview, setYapePreview] = useState(null);
+  const [tarjetaFile, setTarjetaFile] = useState(null);
+  const [tarjetaPreview, setTarjetaPreview] = useState(null);
   const [notes, setNotes]       = useState('');
-  const fileRef = useRef();
 
   const { data: existingPayment } = usePayment(order?.id);
   const confirmPayment = useConfirmPayment();
@@ -39,20 +42,25 @@ export default function PaymentModal({ order, open, onClose }) {
   const subtitle = order.location_type === 'vehiculo'
     ? `${details.placa || '—'} · ${details.color || ''}` : details.nombre || order.location_type;
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setYapeFile(file);
-    setPreview(URL.createObjectURL(file));
-  };
+  // Calcular vuelto para efectivo
+  const total = Number(order.total);
+  const pagado = parseFloat(monto_pagado) || 0;
+  const vuelto = pagado > total ? (pagado - total).toFixed(2) : 0;
+  const puedeConfirmar = pagado >= total;
 
   const handleSubmit = async () => {
     if (method === 'yape' && !yapeFile) return;
+    if (method === 'tarjeta' && !tarjetaFile) return;
+    if (method === 'efectivo' && !puedeConfirmar) return;
+
     await confirmPayment.mutateAsync({
       orderId: order.id,
       method,
+      monto_pagado: method === 'efectivo' ? pagado : null,
+      vuelto: method === 'efectivo' ? parseFloat(vuelto) : null,
       notes: notes || null,
       yapePhoto: yapeFile || null,
+      tarjetaPhoto: tarjetaFile || null,
     });
     onClose();
     resetForm();
@@ -60,8 +68,11 @@ export default function PaymentModal({ order, open, onClose }) {
 
   const resetForm = () => {
     setMethod('efectivo');
+    setMontoPagado('');
     setYapeFile(null);
-    setPreview(null);
+    setYapePreview(null);
+    setTarjetaFile(null);
+    setTarjetaPreview(null);
     setNotes('');
   };
 
@@ -88,7 +99,7 @@ export default function PaymentModal({ order, open, onClose }) {
           <div className="flex justify-between items-center pt-1 border-t border-surface-200 dark:border-surface-700">
             <span className="font-bold text-surface-900 dark:text-white">Total</span>
             <span className="text-xl font-black text-brand-600 dark:text-brand-400">
-              S/{Number(order.total).toFixed(2)}
+              S/{total.toFixed(2)}
             </span>
           </div>
         </div>
@@ -133,16 +144,29 @@ export default function PaymentModal({ order, open, onClose }) {
                 {new Date(existingPayment.confirmed_at).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
-            {/* Foto Yape */}
-            {existingPayment.yape_photo_url && (
-              <div className="mt-2">
-                <p className="text-xs text-surface-400 mb-1">Comprobante Yape</p>
-                <img
-                  src={`http://localhost:3000${existingPayment.yape_photo_url}`}
-                  alt="Comprobante Yape"
-                  className="w-full max-h-48 object-contain rounded-lg border border-surface-200 dark:border-surface-700 cursor-pointer"
-                  onClick={() => window.open(`http://localhost:3000${existingPayment.yape_photo_url}`, '_blank')}
-                />
+            {/* Fotos */}
+            {(existingPayment.yape_photo_url || existingPayment.tarjeta_photo_url) && (
+              <div className="mt-3 space-y-2">
+                {existingPayment.yape_photo_url && (
+                  <div>
+                    <p className="text-xs text-surface-400 mb-1">Comprobante Yape</p>
+                    <img
+                      src={`http://localhost:3000${existingPayment.yape_photo_url}`}
+                      alt="Comprobante Yape"
+                      className="w-full max-h-40 object-contain rounded-lg border border-surface-200 dark:border-surface-700"
+                    />
+                  </div>
+                )}
+                {existingPayment.tarjeta_photo_url && (
+                  <div>
+                    <p className="text-xs text-surface-400 mb-1">Comprobante Tarjeta</p>
+                    <img
+                      src={`http://localhost:3000${existingPayment.tarjeta_photo_url}`}
+                      alt="Comprobante Tarjeta"
+                      className="w-full max-h-40 object-contain rounded-lg border border-surface-200 dark:border-surface-700"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -156,7 +180,7 @@ export default function PaymentModal({ order, open, onClose }) {
                   <button
                     key={m.id}
                     type="button"
-                    onClick={() => { setMethod(m.id); if (m.id !== 'yape') { setYapeFile(null); setPreview(null); } }}
+                    onClick={() => { setMethod(m.id); setMontoPagado(''); }}
                     className={clsx(
                       'py-2.5 rounded-xl text-sm font-semibold border transition-all',
                       method === m.id ? m.color : 'bg-white dark:bg-surface-800 border-surface-200 dark:border-surface-700 text-surface-600 dark:text-surface-400 hover:border-brand-300'
@@ -168,62 +192,106 @@ export default function PaymentModal({ order, open, onClose }) {
               </div>
             </div>
 
-            {/* Upload foto Yape */}
+            {/* EFECTIVO: monto pagado + vuelto */}
+            {method === 'efectivo' && (
+              <div className="animate-fade-in space-y-3 bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                <div>
+                  <label className="section-title mb-2 block">Monto pagado (S/)</label>
+                  <input
+                    type="number"
+                    value={monto_pagado}
+                    onChange={e => setMontoPagado(e.target.value)}
+                    placeholder="0.00"
+                    step="0.50"
+                    className="input text-lg font-semibold w-full"
+                  />
+                  {monto_pagado && !puedeConfirmar && (
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
+                      <IcoAlertCircle size={12} /> Monto insuficiente
+                    </p>
+                  )}
+                </div>
+
+                {pagado > 0 && (
+                  <div className="space-y-2 bg-white dark:bg-surface-800 p-3 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-surface-500">Total</span>
+                      <span className="font-bold">S/{total.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-surface-500">Pagado</span>
+                      <span className="font-bold">S/{pagado.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm border-t border-surface-200 dark:border-surface-700 pt-2">
+                      <span className={clsx('font-bold', puedeConfirmar ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400')}>
+                        Vuelto
+                      </span>
+                      <span className={clsx('text-lg font-black', puedeConfirmar ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400')}>
+                        S/{vuelto}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* YAPE: foto comprobante */}
             {method === 'yape' && (
               <div className="animate-fade-in">
-                <p className="section-title mb-2">
-                  Foto del comprobante Yape <span className="text-red-500">*</span>
-                </p>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handleFileChange}
-                  className="hidden"
+                <CameraCapture
+                  label="Comprobante Yape"
+                  color="violet"
+                  required
+                  onCapture={(file) => {
+                    setYapeFile(file);
+                    setYapePreview(URL.createObjectURL(file));
+                  }}
+                  onRemove={() => {
+                    setYapeFile(null);
+                    setYapePreview(null);
+                  }}
+                  preview={yapePreview}
                 />
-                {preview ? (
-                  <div className="relative">
-                    <img
-                      src={preview}
-                      alt="Comprobante Yape"
-                      className="w-full max-h-48 object-contain rounded-xl border border-surface-200 dark:border-surface-700"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => { setYapeFile(null); setPreview(null); fileRef.current.value = ''; }}
-                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center
-                        justify-center text-xs font-bold hover:bg-red-700 transition-colors"
-                    >
-                      ×
-                    </button>
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
-                      <IcoCheckCircle size={12} /> Foto cargada
-                    </p>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileRef.current.click()}
-                    className="w-full border-2 border-dashed border-violet-300 dark:border-violet-700 rounded-xl
-                      py-6 flex flex-col items-center gap-2 text-violet-600 dark:text-violet-400
-                      hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                      <circle cx="12" cy="13" r="4"/>
-                    </svg>
-                    <span className="text-sm font-semibold">Tomar foto o subir imagen</span>
-                    <span className="text-xs text-surface-400">JPG, PNG o WEBP — máx. 5MB</span>
-                  </button>
-                )}
+              </div>
+            )}
 
-                {!yapeFile && (
-                  <div className="flex items-center gap-1.5 mt-2 text-amber-600 dark:text-amber-400 text-xs">
-                    <IcoAlertCircle size={13} />
-                    Debes adjuntar la foto del Yape para continuar
-                  </div>
-                )}
+            {/* TARJETA: foto comprobante */}
+            {method === 'tarjeta' && (
+              <div className="animate-fade-in">
+                <CameraCapture
+                  label="Comprobante de tarjeta (ticket/foto)"
+                  color="blue"
+                  required
+                  onCapture={(file) => {
+                    setTarjetaFile(file);
+                    setTarjetaPreview(URL.createObjectURL(file));
+                  }}
+                  onRemove={() => {
+                    setTarjetaFile(null);
+                    setTarjetaPreview(null);
+                  }}
+                  preview={tarjetaPreview}
+                />
+              </div>
+            )}
+
+            {/* PLIN: foto comprobante (opcional) */}
+            {method === 'plin' && (
+              <div className="animate-fade-in">
+                <CameraCapture
+                  label="Comprobante Plin (opcional)"
+                  color="sky"
+                  required={false}
+                  onCapture={(file) => {
+                    setYapeFile(file); // Reutilizar el mismo campo
+                    setYapePreview(URL.createObjectURL(file));
+                  }}
+                  onRemove={() => {
+                    setYapeFile(null);
+                    setYapePreview(null);
+                  }}
+                  preview={yapePreview}
+                />
               </div>
             )}
 
@@ -248,7 +316,9 @@ export default function PaymentModal({ order, open, onClose }) {
                 onClick={handleSubmit}
                 disabled={
                   confirmPayment.isPending ||
-                  (method === 'yape' && !yapeFile)
+                  (method === 'yape' && !yapeFile) ||
+                  (method === 'tarjeta' && !tarjetaFile) ||
+                  (method === 'efectivo' && !puedeConfirmar)
                 }
                 className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl
                   transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"

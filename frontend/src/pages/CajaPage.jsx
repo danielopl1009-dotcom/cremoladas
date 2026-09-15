@@ -147,7 +147,7 @@ function DaySummary() {
 }
 
 // ── Página principal ──────────────────────────────────────────────────────────
-export default function CajaPage() {
+export default function CajaPage({ embedded = false }) {
   const [tab, setTab]           = useState('pending');
   const [search, setSearch]     = useState('');
   const [statusFilter, setStatus] = useState('listo');
@@ -173,9 +173,13 @@ export default function CajaPage() {
     { id: '',          label: 'Todos' },
   ];
 
+  const containerClasses = embedded 
+    ? 'flex flex-col h-full overflow-hidden'
+    : 'min-h-screen bg-surface-50 dark:bg-surface-950 flex flex-col';
+
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex flex-col">
-      <Header title="Cremoladas Anabel" subtitle="Caja" />
+    <div className={containerClasses}>
+      {!embedded && <Header title="Cremoladas Anabel" subtitle="Caja" />}
 
       {/* Stats rápidas */}
       <div className="bg-white dark:bg-surface-900 border-b border-surface-100 dark:border-surface-800 px-4 py-3">

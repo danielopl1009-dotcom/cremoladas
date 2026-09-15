@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const confirmPayment = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { method, notes } = req.body;
+    const { method, notes, monto_pagado, vuelto } = req.body;
 
     // Validar método
     const VALID = ['efectivo', 'yape', 'plin', 'tarjeta'];
@@ -18,9 +18,9 @@ export const confirmPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Método de pago inválido' });
     }
 
-    // Si es Yape debe adjuntar foto
-    if (method === 'yape' && !req.file) {
-      return res.status(400).json({ success: false, message: 'Debes adjuntar la foto del Yape' });
+    // Si es Yape o Tarjeta debe adjuntar foto
+    if ((method === 'yape' || method === 'tarjeta') && !req.files) {
+      return res.status(400).json({ success: false, message: `Debes adjuntar foto de ${method}` });
     }
 
     // Verificar que el pedido existe
@@ -33,16 +33,34 @@ export const confirmPayment = async (req, res) => {
       return res.status(409).json({ success: false, message: 'Este pedido ya fue pagado' });
     }
 
-    // URL de la foto si se subió
-    const yapePhotoUrl = req.file
-      ? `/uploads/yape/${req.file.filename}`
-      : null;
+    // URLs de fotos según el tipo
+    let yapePhotoUrl = null;
+    let tarjetaPhotoUrl = null;
+
+    if (req.files) {
+      if (req.files.yape_photo) {
+        yapePhotoUrl = `/uploads/yape/${req.files.yape_photo[0].filename}`;
+      }
+      if (req.files.tarjeta_photo) {
+        tarjetaPhotoUrl = `/uploads/tarjeta/${req.files.tarjeta_photo[0].filename}`;
+      }
+    }
 
     // Registrar el pago
     const result = await query(
-      `INSERT INTO payments (order_id, method, amount, confirmed_by, yape_photo_url, notes)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [orderId, method, order.total, req.user.userId, yapePhotoUrl, notes || null]
+      `INSERT INTO payments (order_id, method, amount, monto_pagado, vuelto, confirmed_by, yape_photo_url, tarjeta_photo_url, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [
+        orderId,
+        method,
+        order.total,
+        monto_pagado || null,
+        vuelto || null,
+        req.user.userId,
+        yapePhotoUrl,
+        tarjetaPhotoUrl,
+        notes || null
+      ]
     );
 
     const payment = result[0];

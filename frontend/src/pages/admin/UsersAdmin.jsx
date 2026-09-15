@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { IcoPlus, IcoEdit } from '../../components/ui/Icons.jsx';
+import { IcoPlus, IcoEdit, IcoCreditCard } from '../../components/ui/Icons.jsx';
 import Modal from '../../components/ui/Modal.jsx';
-import { useUsers, useCreateUser, useUpdateUser, useToggleUser } from '../../hooks/useUsers.js';
+import { useUsers, useCreateUser, useUpdateUser, useToggleUser, useToggleCajaAccess } from '../../hooks/useUsers.js';
 
 const ROLES = [
   { id: 'jalador', label: 'Jalador' },
@@ -67,11 +67,12 @@ export default function UsersAdmin() {
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const toggleUser = useToggleUser();
+  const toggleCajaAccess = useToggleCajaAccess();
 
   if (isLoading) return <div className="flex justify-center py-12"><div className="spinner text-brand-500" /></div>;
 
   return (
-    <div className="space-y-4 max-w-3xl">
+    <div className="space-y-4 max-w-5xl">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-surface-900 dark:text-surface-50">Usuarios</h1>
         <button onClick={() => setModal('create')} className="btn-primary flex items-center gap-2">
@@ -93,13 +94,14 @@ export default function UsersAdmin() {
         ))}
       </div>
 
-      <div className="card p-0 overflow-hidden">
-        <table className="table-base">
+      <div className="card p-0 overflow-hidden overflow-x-auto">
+        <table className="table-base min-w-[800px]">
           <thead>
             <tr>
               <th>Usuario</th>
               <th>Rol</th>
               <th>IP / Último acceso</th>
+              <th>Caja</th>
               <th>Estado</th>
               <th></th>
             </tr>
@@ -139,6 +141,25 @@ export default function UsersAdmin() {
                     </div>
                   ) : (
                     <span className="text-xs text-surface-400">Sin acceso aún</span>
+                  )}
+                </td>
+                <td>
+                  {/* Toggle para acceso a Caja - solo para servidores */}
+                  {u.role === 'servidor' ? (
+                    <button
+                      onClick={() => toggleCajaAccess.mutate(u.id)}
+                      disabled={toggleCajaAccess.isPending}
+                      className={`btn-sm flex items-center gap-1.5 transition-all ${
+                        u.can_access_caja
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+                          : 'bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-400 hover:bg-surface-200 dark:hover:bg-surface-700'
+                      }`}
+                    >
+                      <IcoCreditCard size={13} />
+                      {u.can_access_caja ? 'Sí' : 'No'}
+                    </button>
+                  ) : (
+                    <span className="text-xs text-surface-400">—</span>
                   )}
                 </td>
                 <td>

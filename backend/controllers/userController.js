@@ -43,4 +43,13 @@ export const activateUser = async (req, res) => {
   res.json({ success: true, data: u });
 };
 
-export default { createUser, getUsers, getUserById, updateUser, deactivateUser, activateUser };
+export const toggleCajaAccess = async (req, res) => {
+  try {
+    const u = await User.toggleCajaAccess(req.params.id);
+    res.json({ success: true, data: u, message: `Acceso a Caja ${u.can_access_caja ? 'otorgado' : 'revocado'}` });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+};
+
+export default { createUser, getUsers, getUserById, updateUser, deactivateUser, activateUser, toggleCajaAccess };

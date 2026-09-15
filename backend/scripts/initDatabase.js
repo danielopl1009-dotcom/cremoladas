@@ -10,16 +10,17 @@ const run = async () => {
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
-        id         SERIAL PRIMARY KEY,
-        name       VARCHAR(100) NOT NULL,
-        username   VARCHAR(50) UNIQUE NOT NULL,
-        password   VARCHAR(255) NOT NULL,
-        role       VARCHAR(20) NOT NULL CHECK(role IN ('administrador','jalador','servidor','caja')),
-        active     BOOLEAN DEFAULT true,
-        last_ip    VARCHAR(45),
-        last_login TIMESTAMP,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
+        id              SERIAL PRIMARY KEY,
+        name            VARCHAR(100) NOT NULL,
+        username        VARCHAR(50) UNIQUE NOT NULL,
+        password        VARCHAR(255) NOT NULL,
+        role            VARCHAR(20) NOT NULL CHECK(role IN ('administrador','jalador','servidor','caja')),
+        can_access_caja BOOLEAN DEFAULT false,
+        active          BOOLEAN DEFAULT true,
+        last_ip         VARCHAR(45),
+        last_login      TIMESTAMP,
+        created_at      TIMESTAMP DEFAULT NOW(),
+        updated_at      TIMESTAMP DEFAULT NOW()
       );
 
       CREATE TABLE IF NOT EXISTS products (
@@ -86,9 +87,12 @@ const run = async () => {
         order_id       INTEGER NOT NULL,
         method         VARCHAR(20) NOT NULL CHECK(method IN ('efectivo','yape','plin','tarjeta')),
         amount         DECIMAL(10,2) NOT NULL,
+        monto_pagado   DECIMAL(10,2),
+        vuelto         DECIMAL(10,2),
         confirmed_by   INTEGER,
         confirmed_at   TIMESTAMP DEFAULT NOW(),
         yape_photo_url TEXT,
+        tarjeta_photo_url TEXT,
         notes          TEXT
       );
 

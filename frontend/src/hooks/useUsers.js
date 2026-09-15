@@ -67,3 +67,20 @@ export const useToggleUser = () => {
     },
   });
 };
+
+export const useToggleCajaAccess = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId) => {
+      const { data } = await api.patch(`/users/${userId}/caja-access`);
+      return data.data;
+    },
+    onSuccess: (user) => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success(user.can_access_caja ? '✓ Acceso a Caja otorgado' : '✗ Acceso a Caja revocado');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Error al cambiar acceso a Caja');
+    },
+  });
+};

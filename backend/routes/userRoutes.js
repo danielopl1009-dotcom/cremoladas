@@ -5,7 +5,8 @@ import {
   getUserById,
   updateUser,
   deactivateUser,
-  activateUser
+  activateUser,
+  toggleCajaAccess
 } from '../controllers/userController.js';
 import { authenticateToken, authorizeRoles } from '../middleware/auth.js';
 import { validateRegisterUser } from '../middleware/validation.js';
@@ -23,5 +24,8 @@ router.get('/:id', getUserById);
 router.put('/:id', updateUser);
 router.delete('/:id', deactivateUser);
 router.patch('/:id/activate', activateUser);
+
+// Permisos especiales
+router.patch('/:id/caja-access', toggleCajaAccess);
 
 export default router;

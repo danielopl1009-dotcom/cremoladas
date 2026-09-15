@@ -3,7 +3,8 @@ import clsx from 'clsx';
 import Header from '../components/layout/Header.jsx';
 import OrderCard from '../components/servidor/OrderCard.jsx';
 import PaymentModal from '../components/ui/PaymentModal.jsx';
-import { IcoGrid, IcoPackage, IcoPlus, IcoMinus, IcoEdit, IcoCheck } from '../components/ui/Icons.jsx';
+import CajaPage from './CajaPage.jsx';
+import { IcoGrid, IcoPackage, IcoPlus, IcoMinus, IcoEdit, IcoCheck, IcoCreditCard } from '../components/ui/Icons.jsx';
 import { useOrders, useUpdateOrderStatus } from '../hooks/useOrders.js';
 import { useFlavors } from '../hooks/useProducts.js';
 import useAuthStore from '../stores/authStore.js';
@@ -215,11 +216,18 @@ function InventoryView() {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ServidorPage() {
   const [tab, setTab] = useState('orders');
+  const { user } = useAuthStore();
 
-  const TABS = [
+  // Tabs disponibles
+  let TABS = [
     { id: 'orders',    label: 'Pedidos',    Icon: IcoGrid    },
     { id: 'inventory', label: 'Inventario', Icon: IcoPackage },
   ];
+
+  // Agregar pestaña Caja si tiene permiso
+  if (user?.can_access_caja) {
+    TABS.push({ id: 'caja', label: 'Caja', Icon: IcoCreditCard });
+  }
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-surface-950 flex flex-col">
@@ -245,7 +253,13 @@ export default function ServidorPage() {
       <div className="flex-1 overflow-hidden">
         {tab === 'orders'    && <KanbanView />}
         {tab === 'inventory' && <InventoryView />}
+        {tab === 'caja'      && <CajaPageEmbed />}
       </div>
     </div>
   );
+}
+
+// Wrapper para CajaPage dentro de ServidorPage (sin Header duplicado)
+function CajaPageEmbed() {
+  return <CajaPage embedded />;
 }
