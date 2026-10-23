@@ -20,9 +20,9 @@ export default {
         },
         surface: {
           0:   '#ffffff',
-          50:  '#f8f8f8',
-          100: '#f0f0f0',
-          200: '#e4e4e4',
+          50:  '#f6f8f4',
+          100: '#edf1eb',
+          200: '#dfe6dc',
           300: '#d1d1d1',
           400: '#a0a0a0',
           500: '#737373',
@@ -34,11 +34,11 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
-        card: '0 1px 3px 0 rgb(0 0 0 / .08), 0 1px 2px -1px rgb(0 0 0 / .06)',
-        'card-md': '0 4px 12px 0 rgb(0 0 0 / .10)',
+        card: '0 1px 3px 0 rgb(20 50 28 / .06), 0 1px 2px -1px rgb(20 50 28 / .04)',
+        'card-md': '0 4px 12px 0 rgb(20 50 28 / .08)',
         'card-lg': '0 8px 24px 0 rgb(0 0 0 / .12)',
       },
       borderRadius: {

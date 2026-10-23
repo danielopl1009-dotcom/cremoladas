@@ -44,12 +44,32 @@ function LiveCounter({ from }) {
 }
 
 // Bloque de tiempos
-function TimeLine({ order }) {
+function TimeLine({ order, compact = false }) {
   const waitToPrep = minutosBetween(order.created_at, order.prepared_at);
   const prepTime   = minutosBetween(order.prepared_at, order.ready_at);
   const readyToEnd = minutosBetween(order.ready_at, order.delivered_at || order.cancelled_at);
   const totalTime  = minutosBetween(order.created_at, order.delivered_at || order.cancelled_at);
   const finished   = !!(order.delivered_at || order.cancelled_at);
+
+  if (compact) {
+    const activeSince = order.status === 'preparando'
+      ? order.prepared_at
+      : order.status === 'listo'
+        ? order.ready_at
+        : order.created_at;
+    const stageLabel = order.status === 'preparando'
+      ? 'En preparación'
+      : order.status === 'listo'
+        ? 'Esperando entrega'
+        : 'En espera';
+
+    return (
+      <div className="flex items-center justify-between gap-2 rounded-lg bg-surface-50 dark:bg-surface-800/60 px-3 py-2 text-xs">
+        <span className="font-semibold text-surface-600 dark:text-surface-300">{stageLabel}</span>
+        <LiveCounter from={activeSince} />
+      </div>
+    );
+  }
 
   const rows = [
     { label: 'Pedido enviado', ts: order.created_at,   color: 'text-surface-700 dark:text-surface-200' },
@@ -107,6 +127,7 @@ function TimeLine({ order }) {
 }
 
 export default function OrderCard({ order, onStatusChange, isUpdating, onPayClick }) {
+  const [showTimeline, setShowTimeline] = useState(false);
   const details = typeof order.location_details === 'string'
     ? JSON.parse(order.location_details) : order.location_details;
 
@@ -120,14 +141,14 @@ export default function OrderCard({ order, onStatusChange, isUpdating, onPayClic
 
   return (
     <div className={clsx(
-      'bg-white dark:bg-surface-900 rounded-xl border border-surface-100 dark:border-surface-800',
-      'shadow-card p-4 space-y-3 border-l-4 animate-fade-in',
+      'bg-white dark:bg-surface-900 rounded-lg border border-surface-100 dark:border-surface-800',
+      'shadow-card p-3.5 space-y-3 border-l-[3px] animate-fade-in',
       STATUS_BAR[order.status]
     )}>
       {/* Cabecera */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-base font-black text-surface-900 dark:text-surface-50">
+          <p className="text-lg leading-none font-extrabold text-surface-900 dark:text-surface-50">
             #{order.order_number}
           </p>
           <div className="flex items-center gap-1.5 mt-0.5">
@@ -173,8 +194,21 @@ export default function OrderCard({ order, onStatusChange, isUpdating, onPayClic
         </div>
       )}
 
-      {/* Línea de tiempo */}
-      <TimeLine order={order} />
+      {/* Tiempo de etapa y detalle cronológico */}
+      {['pendiente', 'preparando', 'listo'].includes(order.status) ? (
+        <>
+          <TimeLine order={order} compact />
+          <button
+            type="button"
+            onClick={() => setShowTimeline(value => !value)}
+            aria-expanded={showTimeline}
+            className="text-xs font-semibold text-surface-500 hover:text-brand-600 dark:hover:text-brand-400"
+          >
+            {showTimeline ? 'Ocultar tiempos' : 'Ver tiempos del pedido'}
+          </button>
+          {showTimeline && <TimeLine order={order} />}
+        </>
+      ) : <TimeLine order={order} />}
 
       {/* Footer */}
       <div className="flex items-center justify-between">

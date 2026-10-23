@@ -4,7 +4,7 @@ import Header from '../components/layout/Header.jsx';
 import OrderCard from '../components/servidor/OrderCard.jsx';
 import PaymentModal from '../components/ui/PaymentModal.jsx';
 import CajaPage from './CajaPage.jsx';
-import { IcoGrid, IcoPackage, IcoPlus, IcoMinus, IcoEdit, IcoCheck, IcoCreditCard } from '../components/ui/Icons.jsx';
+import { IcoGrid, IcoPackage, IcoPlus, IcoMinus, IcoEdit, IcoCheck, IcoCreditCard, IcoSearch, IcoX } from '../components/ui/Icons.jsx';
 import { useOrders, useUpdateOrderStatus } from '../hooks/useOrders.js';
 import { useFlavors } from '../hooks/useProducts.js';
 import useAuthStore from '../stores/authStore.js';
@@ -23,6 +23,7 @@ function KanbanView() {
   const [updatingId, setUpdatingId]   = useState(null);
   const [showDelivered, setShowDelivered] = useState(false);
   const [payOrder, setPayOrder]       = useState(null);
+  const [search, setSearch] = useState('');
 
   const { data: orders = [], isLoading } = useOrders({});
   const updateStatus = useUpdateOrderStatus();
@@ -37,7 +38,23 @@ function KanbanView() {
     finally { setUpdatingId(null); }
   };
 
-  const grouped = COLUMNS.reduce((a, c) => ({ ...a, [c.id]: orders.filter(o => o.status === c.id) }), {});
+  const normalizedSearch = search.trim().toLocaleLowerCase();
+  const visibleOrders = orders.filter(order => {
+    if (!normalizedSearch) return true;
+    const searchable = [
+      order.order_number,
+      order.location_details,
+      order.observations,
+      ...(order.items || []).flatMap(item => [item.size, item.productName, item.flavors]),
+    ].map(value => typeof value === 'string' ? value : JSON.stringify(value ?? '')).join(' ').toLocaleLowerCase();
+    return searchable.includes(normalizedSearch);
+  });
+  const grouped = COLUMNS.reduce((groups, column) => ({
+    ...groups,
+    [column.id]: visibleOrders
+      .filter(order => order.status === column.id)
+      .sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)),
+  }), {});
   const cols    = showDelivered ? COLUMNS : COLUMNS.filter(c => c.id !== 'entregado');
 
   if (isLoading) return <div className="flex justify-center py-20"><div className="spinner text-brand-500" /></div>;
@@ -46,7 +63,23 @@ function KanbanView() {
     <div className="h-full flex flex-col">
       {/* Barra de contadores */}
       <div className="bg-white dark:bg-surface-900 border-b border-surface-100 dark:border-surface-800
-        px-4 py-2 flex items-center gap-4 overflow-x-auto shrink-0">
+        px-4 py-2 flex flex-wrap items-center gap-3 shrink-0">
+        <div className="relative w-full sm:w-56 sm:shrink-0">
+          <IcoSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" />
+          <input
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+            aria-label="Buscar pedidos"
+            placeholder="N.º, ubicación o producto"
+            className="input h-9 py-1.5 pl-9 pr-9 text-xs"
+          />
+          {search && (
+            <button type="button" onClick={() => setSearch('')} aria-label="Limpiar búsqueda"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600">
+              <IcoX size={14} />
+            </button>
+          )}
+        </div>
         {COLUMNS.map(col => (
           <div key={col.id} className="flex items-center gap-1.5 shrink-0">
             <span className={clsx('w-2 h-2 rounded-full', col.dot)} />
@@ -82,7 +115,7 @@ function KanbanView() {
 
             <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[calc(100vh-200px)] pr-0.5">
               {grouped[col.id]?.length === 0
-                ? <p className="text-center text-xs text-surface-400 py-8">Sin pedidos</p>
+                ? <p className="text-center text-xs text-surface-400 py-8">{search ? 'Sin coincidencias' : 'Sin pedidos'}</p>
                 : grouped[col.id].map(order => (
                   <OrderCard
                     key={order.id}

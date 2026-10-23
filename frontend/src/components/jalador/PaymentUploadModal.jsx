@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import Modal from '../ui/Modal.jsx';
-import { IcoUpload, IcoX, IcoImage } from '../ui/Icons.jsx';
+import { IcoUpload, IcoX } from '../ui/Icons.jsx';
 
 export default function PaymentUploadModal({ isOpen, onClose, onUpload, orderId }) {
   const [selectedFile, setSelectedFile] = useState(null);

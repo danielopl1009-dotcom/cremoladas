@@ -197,9 +197,7 @@ export default function ProductPicker({ cart, onCartChange }) {
 
   return (
     <div className="space-y-4">
-      {/* ════════════════════════════════════════════════════════════════════════ */
-      {/* PESTAÑAS: CREMOLADAS vs HELADOS */
-      {/* ════════════════════════════════════════════════════════════════════════ */}
+      {/* PESTAÑAS: CREMOLADAS vs HELADOS */}
       <div className="flex gap-2 border-b border-surface-200 dark:border-surface-700">
         <button
           type="button"
